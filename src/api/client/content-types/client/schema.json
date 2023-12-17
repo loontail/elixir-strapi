@@ -47,7 +47,7 @@
         }
       }
     },
-    "main_file": {
+    "mainFile": {
       "type": "media",
       "multiple": false,
       "required": true,
@@ -60,7 +60,7 @@
         }
       }
     },
-    "update_file": {
+    "updateFile": {
       "type": "media",
       "multiple": false,
       "required": false,
@@ -84,6 +84,61 @@
         "pattern": "title"
       },
       "customField": "plugin::slug.slug"
+    },
+    "background": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "poster": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "version": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::minecraft.minecraft"
+    },
+    "keywords": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::keyword.keyword"
+    },
+    "shortDescription": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "available": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "boolean",
+      "default": false,
+      "required": true
     }
   }
 }
