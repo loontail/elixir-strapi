@@ -139,6 +139,15 @@
       "type": "boolean",
       "default": false,
       "required": true
+    },
+    "localName": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
     }
   }
 }
