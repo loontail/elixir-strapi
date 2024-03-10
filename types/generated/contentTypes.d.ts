@@ -753,31 +753,6 @@ export interface ApiClientClient extends Schema.CollectionType {
           localized: true;
         };
       }>;
-    mainFile: Attribute.Media &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    updateFile: Attribute.Media &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    slug: Attribute.String &
-      Attribute.CustomField<
-        'plugin::slug.slug',
-        {
-          pattern: 'title';
-        }
-      > &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     background: Attribute.Media &
       Attribute.Required &
       Attribute.SetPluginOptions<{
@@ -792,11 +767,6 @@ export interface ApiClientClient extends Schema.CollectionType {
           localized: true;
         };
       }>;
-    version: Attribute.Relation<
-      'api::client.client',
-      'oneToOne',
-      'api::minecraft.minecraft'
-    >;
     keywords: Attribute.Relation<
       'api::client.client',
       'oneToMany',
@@ -817,13 +787,39 @@ export interface ApiClientClient extends Schema.CollectionType {
         };
       }> &
       Attribute.DefaultTo<false>;
-    localName: Attribute.String &
+    slug: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    uuid: Attribute.UID<'api::client.client', 'title'> &
       Attribute.Required &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
         };
       }>;
+    metadataUrl: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    versionHashUrl: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    minecraftVersion: Attribute.Relation<
+      'api::client.client',
+      'oneToOne',
+      'api::minecraft.minecraft'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -901,6 +897,7 @@ export interface ApiMinecraftMinecraft extends Schema.CollectionType {
     singularName: 'minecraft';
     pluralName: 'minecrafts';
     displayName: 'Minecraft';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -911,6 +908,13 @@ export interface ApiMinecraftMinecraft extends Schema.CollectionType {
     };
   };
   attributes: {
+    version: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     title: Attribute.String &
       Attribute.Required &
       Attribute.SetPluginOptions<{
@@ -919,8 +923,7 @@ export interface ApiMinecraftMinecraft extends Schema.CollectionType {
         };
       }> &
       Attribute.DefaultTo<'Minecraft'>;
-    version: Attribute.String &
-      Attribute.Required &
+    forge: Attribute.String &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;

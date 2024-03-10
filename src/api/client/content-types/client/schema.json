@@ -47,44 +47,6 @@
         }
       }
     },
-    "mainFile": {
-      "type": "media",
-      "multiple": false,
-      "required": true,
-      "allowedTypes": [
-        "files"
-      ],
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
-    },
-    "updateFile": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "files"
-      ],
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
-    },
-    "slug": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "customField",
-      "options": {
-        "pattern": "title"
-      },
-      "customField": "plugin::slug.slug"
-    },
     "background": {
       "type": "media",
       "multiple": false,
@@ -111,11 +73,6 @@
         }
       }
     },
-    "version": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::minecraft.minecraft"
-    },
     "keywords": {
       "type": "relation",
       "relation": "oneToMany",
@@ -140,7 +97,28 @@
       "default": false,
       "required": true
     },
-    "localName": {
+    "slug": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "string",
+      "regex": "^[a-z\\-]+$",
+      "required": true,
+      "unique": false
+    },
+    "uuid": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "uid",
+      "required": true,
+      "targetField": "title"
+    },
+    "metadataUrl": {
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -148,6 +126,20 @@
       },
       "type": "string",
       "required": true
+    },
+    "versionHashUrl": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "minecraftVersion": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::minecraft.minecraft"
     }
   }
 }

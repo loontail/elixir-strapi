@@ -4,7 +4,8 @@
   "info": {
     "singularName": "minecraft",
     "pluralName": "minecrafts",
-    "displayName": "Minecraft"
+    "displayName": "Minecraft",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -15,6 +16,15 @@
     }
   },
   "attributes": {
+    "version": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
     "title": {
       "pluginOptions": {
         "i18n": {
@@ -25,14 +35,14 @@
       "required": true,
       "default": "Minecraft"
     },
-    "version": {
+    "forge": {
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       },
       "type": "string",
-      "required": true
+      "required": false
     }
   }
 }
