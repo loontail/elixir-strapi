@@ -20,6 +20,7 @@ build_strapi:
 deploy_strapi:
   stage: deploy
   before_script:
+    - rm -rf /var/www/strapi/.env
     - rm -rf /var/www/strapi/*
   script:
     - mkdir -p /var/www/strapi
