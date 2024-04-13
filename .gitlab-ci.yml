@@ -26,5 +26,9 @@ deploy_strapi:
     - cp -R build/* /var/www/strapi/
     - sudo systemctl restart elixir-strapi.service
     - sudo systemctl restart nginx
+  after_script:
+    - cd /var/www/strapi
+    - chmod +x ./setup_env.sh
+    - ./setup_env.sh
   only:
     - main
