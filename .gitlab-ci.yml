@@ -5,6 +5,7 @@ stages:
 build_strapi:
   stage: build
   script:
+    - nvm use 18
     - npm install
     - npm run build
   artifacts:
