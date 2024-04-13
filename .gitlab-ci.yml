@@ -1,0 +1,25 @@
+stages:
+  - build
+  - deploy
+
+build_strapi:
+  stage: build
+  image: node:18
+  script:
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 hour
+  only:
+    - main
+
+deploy_strapi:
+  stage: deploy
+  script:
+    - mkdir -p /var/www/strapi
+    - cp -R build/* /var/www/strapi/
+    - sudo systemctl restart elixir-strapi.service
+  only:
+    - main
