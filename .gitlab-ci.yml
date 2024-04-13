@@ -1,9 +1,9 @@
 stages:
   - prepare
-  - build
   - copy
   - prepare_env
   - install
+  - build
   - run
 
 prepare:
@@ -11,17 +11,6 @@ prepare:
   script:
     - rm -rf /var/www/strapi/.env
     - rm -rf /var/www/strapi/*
-  only:
-    - main
-
-build_strapi:
-  stage: build
-  before_script:
-    - curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash
-    - sudo apt-get install -y nodejs
-  script:
-    - npm install
-    - npm run build
   only:
     - main
 
@@ -52,6 +41,18 @@ install_deps:
       - npm install
   only:
       - main
+
+build_strapi:
+  stage: build
+  before_script:
+    - curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash
+    - sudo apt-get install -y nodejs
+  script:
+    - cd /var/www/strapi
+    - npm install
+    - npm run build
+  only:
+    - main
 
 run_strapi:
   stage: run
