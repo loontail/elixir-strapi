@@ -4,7 +4,6 @@ stages:
 
 build_strapi:
   stage: build
-  image: node:18
   script:
     - npm install
     - npm run build
