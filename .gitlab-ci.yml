@@ -19,9 +19,12 @@ build_strapi:
 
 deploy_strapi:
   stage: deploy
+  before_script:
+    - rm -rf /var/www/strapi/*
   script:
     - mkdir -p /var/www/strapi
     - cp -R build/* /var/www/strapi/
     - sudo systemctl restart elixir-strapi.service
+    - sudo systemctl restart nginx
   only:
     - main
