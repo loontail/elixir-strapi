@@ -1,6 +1,18 @@
 stages:
+  - prepare
   - build
-  - deploy
+  - copy
+  - prepare_env
+  - install
+  - run
+
+prepare:
+  stage: prepare
+  script:
+    - rm -rf /var/www/strapi/.env
+    - rm -rf /var/www/strapi/*
+  only:
+    - main
 
 build_strapi:
   stage: build
@@ -10,25 +22,42 @@ build_strapi:
   script:
     - npm install
     - npm run build
-  artifacts:
-    paths:
-      - build/
-    expire_in: 1 hour
   only:
     - main
 
-deploy_strapi:
-  stage: deploy
-  before_script:
-    - rm -rf /var/www/strapi/.env
-    - rm -rf /var/www/strapi/*
+copy_strapi:
+  stage: copy
   script:
     - mkdir -p /var/www/strapi
     - cp -R * /var/www/strapi/
     - sudo systemctl restart elixir-strapi.service
-  after_script:
+  only:
+    - main
+
+prepare_env:
+  stage: prepare_env
+  script:
     - cd /var/www/strapi
     - chmod +x ./setup_env.sh
     - ./setup_env.sh
   only:
     - main
+
+install_deps:
+  stage: install
+  before_script:
+    - curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash
+    - sudo apt-get install -y nodejs
+  script:
+      - cd /var/www/strapi
+      - npm install
+  only:
+      - main
+
+run_strapi:
+  stage: run
+  script:
+      - cd /var/www/strapi
+      - sudo systemctl restart elixir-strapi.service
+  only:
+      - main
