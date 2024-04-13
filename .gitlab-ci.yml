@@ -30,7 +30,6 @@ copy_strapi:
   script:
     - mkdir -p /var/www/strapi
     - cp -R * /var/www/strapi/
-    - sudo systemctl restart elixir-strapi.service
   only:
     - main
 
