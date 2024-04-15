@@ -8,4 +8,13 @@ module.exports = [
       auth: false
     },
   },
+  {
+    method: 'POST',
+    path: '/:username/upload-cape',
+    handler: 'capeUploader.index',
+    config: {
+      policies: [],
+      auth: false
+    },
+  },
 ];
