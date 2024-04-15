@@ -1,10 +1,9 @@
 module.exports = ({ env }) => ({
-  'metadata': {
+  'skins': {
     enabled: true,
-    resolve: './src/plugins/metadata',
+    resolve: './src/plugins/skins',
     config: {
-      downloadsPath: env('DOWNLOADS_PATH'),
-      downloadUrl: env('DOWNLOAD_URL'),
+      skinsPath: env('SKINS_PATH'),
     }
   },
 });
