@@ -6,7 +6,7 @@ module.exports = ({ strapi }) => ({
   index(ctx) {
     try {
       const {username} = ctx.params
-      const { path, type } = ctx.request.files.skin;
+      const { path, type } = ctx.request.files.cape;
       const skinsPath = strapi.plugin('skins').config('skinsPath');
 
       if (type !== 'image/png') {
