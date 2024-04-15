@@ -16,7 +16,7 @@ module.exports = ({ strapi }) => ({
 
         copyFileSync(path, userSkinsPath)
 
-        ctx.body = userSkinsPath
+        ctx.body = `${username}_cape.png`
       }
     } catch (error) {
       ctx.badRequest(error.message)
