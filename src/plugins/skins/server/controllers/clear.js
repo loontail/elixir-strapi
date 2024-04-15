@@ -1,5 +1,5 @@
 'use strict';
-const { rmSync } = require('fs');
+const { rmSync, existsSync } = require('fs');
 const { join } = require('path');
 
 module.exports = ({ strapi }) => ({
@@ -11,8 +11,8 @@ module.exports = ({ strapi }) => ({
       const userSkinsPath = join(skinsPath, `${username}.png`);
       const userCapePath = join(skinsPath, `${username}_cape.png`);
 
-      rmSync(userSkinsPath);
-      rmSync(userCapePath);
+      if (existsSync(userSkinsPath)) rmSync(userSkinsPath);
+      if (existsSync(userCapePath)) rmSync(userCapePath);
 
       ctx.body = 'Cleared'
     } catch (error) {
