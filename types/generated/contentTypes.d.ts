@@ -466,6 +466,12 @@ export interface ApiClientClient extends Schema.CollectionType {
       'oneToOne',
       'api::minecraft.minecraft'
     >;
+    servers: Attribute.JSON &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
