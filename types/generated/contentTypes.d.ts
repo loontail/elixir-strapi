@@ -454,19 +454,18 @@ export interface ApiClientClient extends Schema.CollectionType {
           localized: true;
         };
       }>;
-    versionHashUrl: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     minecraftVersion: Attribute.Relation<
       'api::client.client',
       'oneToOne',
       'api::minecraft.minecraft'
     >;
     servers: Attribute.JSON &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    titleImage: Attribute.Media &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
