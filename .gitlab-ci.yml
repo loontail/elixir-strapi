@@ -10,14 +10,12 @@ prepare:
   stage: prepare
   script:
     - rm -rf /var/www/strapi/.env
-    - rm -rf /var/www/strapi/*
   only:
     - main
 
 copy_strapi:
   stage: copy
   script:
-    - mkdir -p /var/www/strapi
     - cp -R * /var/www/strapi/
   only:
     - main
