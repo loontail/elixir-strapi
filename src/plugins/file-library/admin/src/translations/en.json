@@ -1,0 +1,5 @@
+{
+  "plugin.name": "File Library",
+  "build-picker.label": "File Library Build",
+  "build-picker.description": "Select a File Library build to link to this entry"
+}

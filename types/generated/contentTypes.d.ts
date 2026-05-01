@@ -471,6 +471,13 @@ export interface ApiClientClient extends Schema.CollectionType {
           localized: true;
         };
       }>;
+    artifactsPath: Attribute.String &
+      Attribute.CustomField<'plugin::file-library.build-picker'> &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -717,6 +724,109 @@ export interface PluginUploadFolder extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'plugin::upload.folder',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface PluginFileLibraryFileBuild extends Schema.CollectionType {
+  collectionName: 'file_builds';
+  info: {
+    singularName: 'file-build';
+    pluralName: 'file-builds';
+    displayName: 'File Build';
+    description: 'Physical Minecraft build file set';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: true;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required;
+    slug: Attribute.UID<'plugin::file-library.file-build', 'name'> &
+      Attribute.Required;
+    description: Attribute.Text;
+    version: Attribute.String;
+    status: Attribute.Enumeration<['draft', 'processing', 'ready', 'failed']> &
+      Attribute.DefaultTo<'draft'>;
+    filesCount: Attribute.Integer & Attribute.DefaultTo<0>;
+    totalSize: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
+    processingError: Attribute.Text;
+    lastGeneratedAt: Attribute.DateTime;
+    fileEntries: Attribute.Relation<
+      'plugin::file-library.file-build',
+      'oneToMany',
+      'plugin::file-library.file-entry'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'plugin::file-library.file-build',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'plugin::file-library.file-build',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface PluginFileLibraryFileEntry extends Schema.CollectionType {
+  collectionName: 'file_entries';
+  info: {
+    singularName: 'file-entry';
+    pluralName: 'file-entries';
+    displayName: 'File Entry';
+    description: 'Individual file within a build';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    build: Attribute.Relation<
+      'plugin::file-library.file-entry',
+      'manyToOne',
+      'plugin::file-library.file-build'
+    >;
+    relativePath: Attribute.String & Attribute.Required;
+    name: Attribute.String & Attribute.Required;
+    category: Attribute.String;
+    size: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
+    sha256: Attribute.String;
+    isDir: Attribute.Boolean & Attribute.DefaultTo<false>;
+    downloadOnce: Attribute.Boolean & Attribute.DefaultTo<false>;
+    fileModifiedAt: Attribute.DateTime;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'plugin::file-library.file-entry',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'plugin::file-library.file-entry',
       'oneToOne',
       'admin::user'
     > &
@@ -974,6 +1084,8 @@ declare module '@strapi/types' {
       'api::minecraft.minecraft': ApiMinecraftMinecraft;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
+      'plugin::file-library.file-build': PluginFileLibraryFileBuild;
+      'plugin::file-library.file-entry': PluginFileLibraryFileEntry;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;

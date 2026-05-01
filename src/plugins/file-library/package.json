@@ -1,0 +1,38 @@
+{
+  "name": "strapi-plugin-file-library",
+  "version": "0.1.0",
+  "description": "Minecraft build file library management",
+  "strapi": {
+    "name": "file-library",
+    "description": "Manage Minecraft build file sets and generate artifacts manifests",
+    "kind": "plugin",
+    "displayName": "File Library"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^1.6.3",
+    "@strapi/helper-plugin": "^4.6.0",
+    "@strapi/icons": "^1.6.3",
+    "adm-zip": "^0.5.10",
+    "prop-types": "^15.7.2"
+  },
+  "devDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^5.3.4",
+    "styled-components": "^5.3.6"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0",
+    "react-router-dom": "^5.2.0",
+    "styled-components": "^5.2.1"
+  },
+  "author": {
+    "name": "A Strapi developer"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=20.x.x",
+    "npm": ">=6.0.0"
+  },
+  "license": "MIT"
+}
