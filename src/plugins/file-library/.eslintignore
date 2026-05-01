@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.json
+strapi-admin.js
+strapi-server.js
+server/content-types/
