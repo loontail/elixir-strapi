@@ -1,6 +1,6 @@
-// TODO: type properly — Strapi's Core.Strapi type requires @strapi/strapi package
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const destroy = (_: { strapi: any }): void => {
+import type { StrapiInstance } from './types';
+
+const destroy = (_: { strapi: StrapiInstance }): void => {
   // No cleanup needed
 };
 

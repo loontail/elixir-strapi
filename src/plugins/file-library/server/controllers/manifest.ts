@@ -1,9 +1,9 @@
 import { readFileSync, existsSync } from 'fs';
 import { getManifestPath } from '../services/storage';
 
-// TODO: type properly — Strapi's Core.Strapi type requires @strapi/strapi package
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const manifestController = ({ strapi: _strapi }: { strapi: any }) => ({
+import type { StrapiInstance } from '../types';
+
+const manifestController = ({ strapi: _strapi }: { strapi: StrapiInstance }) => ({
   async getManifest(ctx: {
     params: { slug: string };
     notFound: (msg: string) => void;

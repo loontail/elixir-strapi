@@ -1,14 +1,4 @@
-interface ContentRouteConfig {
-  type: 'content-api';
-  routes: Array<{
-    method: string;
-    path: string;
-    handler: string;
-    config: { auth: boolean; policies: unknown[] };
-  }>;
-}
-
-const contentRoutes: ContentRouteConfig = {
+const contentRoutes = {
   type: 'content-api',
   routes: [
     {

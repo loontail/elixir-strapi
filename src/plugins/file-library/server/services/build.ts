@@ -2,9 +2,9 @@ import type { Build, FileEntry } from '../../shared/types/entities';
 
 type ScanEntry = Omit<FileEntry, 'id' | 'downloadOnce' | 'build'>;
 
-// TODO: type properly — Strapi's Core.Strapi type requires @strapi/strapi package
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const buildService = ({ strapi }: { strapi: any }) => ({
+import type { StrapiInstance } from '../types';
+
+const buildService = ({ strapi }: { strapi: StrapiInstance }) => ({
   async findMany(params: Record<string, unknown> = {}): Promise<Build[]> {
     return strapi.db.query('plugin::file-library.file-build').findMany({
       orderBy: { createdAt: 'desc' },

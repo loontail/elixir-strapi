@@ -1,16 +1,4 @@
-interface Route {
-  method: string;
-  path: string;
-  handler: string;
-  config: { policies: unknown[] };
-}
-
-interface RouteConfig {
-  type: 'admin';
-  routes: Route[];
-}
-
-const adminRoutes: RouteConfig = {
+const adminRoutes = {
   type: 'admin',
   routes: [
     { method: 'GET', path: '/disk-space', handler: 'build.diskSpace', config: { policies: [] } },

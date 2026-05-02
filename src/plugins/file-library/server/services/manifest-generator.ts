@@ -1,9 +1,9 @@
 import type { Manifest, ManifestEntry } from '../../shared/types/api';
 import { getPublicUrl, writeManifestAtomic } from './storage';
 
-// TODO: type properly — Strapi's Core.Strapi type requires @strapi/strapi package
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const generate = async (buildSlug: string, strapi: any): Promise<Manifest> => {
+import type { StrapiInstance } from '../types';
+
+const generate = async (buildSlug: string, strapi: StrapiInstance): Promise<Manifest> => {
   const fileEntries: Array<{
     relativePath: string;
     name: string;

@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ComponentType } from 'react';
 import { prefixPluginTranslations } from '@strapi/helper-plugin';
 import pluginPkg from '../../package.json';
 import pluginId from './pluginId';
@@ -12,14 +12,14 @@ export default {
   register(app: {
     addMenuLink: (config: {
       to: string;
-      icon: React.ComponentType;
+      icon: ComponentType;
       intlLabel: { id: string; defaultMessage: string };
-      Component: () => Promise<{ default: React.ComponentType }>;
+      Component: () => Promise<{ default: ComponentType }>;
       permissions: unknown[];
     }) => void;
     registerPlugin: (config: {
       id: string;
-      initializer: React.ComponentType<{ setPlugin: (id: string) => void }>;
+      initializer: ComponentType<{ setPlugin: (id: string) => void }>;
       isReady: boolean;
       name: string;
     }) => void;
@@ -30,8 +30,8 @@ export default {
         type: string;
         intlLabel: { id: string; defaultMessage: string };
         intlDescription: { id: string; defaultMessage: string };
-        icon: React.ComponentType;
-        components: { Input: () => Promise<{ default: React.ComponentType }> };
+        icon: ComponentType;
+        components: { Input: () => Promise<{ default: ComponentType }> };
         options: { base: unknown[]; advanced: unknown[]; validator: () => void };
       }) => void;
     };
@@ -71,7 +71,7 @@ export default {
       },
       icon: PluginIcon,
       components: {
-        Input: async () => ({ default: BuildPickerInput as React.ComponentType }),
+        Input: async () => ({ default: BuildPickerInput as ComponentType }),
       },
       options: {
         base: [],

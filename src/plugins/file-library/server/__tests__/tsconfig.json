@@ -6,14 +6,11 @@
     "strict": true,
     "noImplicitAny": true,
     "noEmit": true,
-    "allowJs": true,
-    "checkJs": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "composite": true
+    "resolveJsonModule": true
   },
-  "include": ["./**/*", "../shared/**/*"],
-  "exclude": ["node_modules", "dist", "**/__tests__/**"]
+  "include": ["./**/*.ts", "../**/*.ts"],
+  "exclude": ["../../node_modules"]
 }

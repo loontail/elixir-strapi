@@ -20,7 +20,7 @@ import {
 const getSystemDiskSpace = (): { free: number; total: number } | null => {
   try {
     // statfsSync is available since Node.js 19.6.0; returns null on older runtimes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any
     const nativeFs = require('fs') as any;
     if (typeof nativeFs.statfsSync !== 'function') return null;
     const s = nativeFs.statfsSync(process.cwd()) as { bfree: number; bsize: number; blocks: number };
@@ -33,12 +33,7 @@ import { extractZip } from '../services/archive';
 import { scanDirectory, computeFileSha256 } from '../services/scanner';
 import { generate as generateManifest } from '../services/manifest-generator';
 import type { Build, FileEntry } from '../../shared/types/entities';
-
-// TODO: type properly — Strapi's Core.Strapi type requires @strapi/strapi package
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Strapi = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KoaContext = any;
+import type { StrapiInstance as Strapi, KoaContext } from '../types';
 
 const removeEmptyDirsUpward = (dirPath: string, rootPath: string): void => {
   if (dirPath === rootPath || !dirPath.startsWith(rootPath)) return;
@@ -138,7 +133,13 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     if (!build) return ctx.notFound('Build not found');
 
     if (build.status === 'processing') {
-      return ctx.badRequest('Build is currently being processed. Please wait.');
+      const updatedAt = (build as unknown as Record<string, unknown>).updatedAt as string | undefined;
+      const stalledMs = updatedAt ? Date.now() - new Date(updatedAt).getTime() : Infinity;
+      const STALE_THRESHOLD_MS = 10 * 60 * 1000;
+      if (stalledMs < STALE_THRESHOLD_MS) {
+        return ctx.badRequest('Build is currently being processed. Please wait.');
+      }
+      // Processing state is stale — allow re-upload
     }
 
     const file = ctx.request.files?.archive;
@@ -237,7 +238,8 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const file = ctx.request.files?.file;
     if (!file) return ctx.badRequest('No file provided. Send the file as form field "file".');
 
-    const rawTargetPath: string = ctx.request.body?.targetPath || file.name;
+    const rawTargetPath: string =
+      (ctx.request.body as { targetPath?: string })?.targetPath || file.name;
 
     const normalized = path.normalize(rawTargetPath).replace(/\\/g, '/');
     if (normalized.startsWith('..') || path.isAbsolute(normalized)) {
@@ -332,7 +334,9 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
       return ctx.notFound('Entry not found in this build');
     }
 
-    const rawNewPath: string | undefined = ctx.request.body?.newRelativePath;
+    const rawNewPath: string | undefined = (
+      ctx.request.body as { newRelativePath?: string }
+    )?.newRelativePath;
     if (!rawNewPath?.trim()) return ctx.badRequest('newRelativePath is required');
 
     const normalized = path.normalize(rawNewPath.trim()).replace(/\\/g, '/');
