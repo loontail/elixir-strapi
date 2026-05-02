@@ -1,5 +1,6 @@
 import { memo, Fragment } from 'react';
-import { useTheme, BaseCheckbox, Typography, IconButton, SimpleMenu, MenuItem } from '@strapi/design-system';
+import { useTheme } from 'styled-components';
+import { Checkbox, Typography, IconButton, SimpleMenu, MenuItem } from '@strapi/design-system';
 import { More } from '@strapi/icons';
 import { useIntl } from 'react-intl';
 import { PencilIcon, UploadIcon, HashIcon, TrashIcon, FolderIcon, FolderOpenIcon, FileIcon, ChevronRightIcon, ChevronDownIcon } from '../../../../components/Icons';
@@ -141,10 +142,10 @@ const FileTreeRow = memo(({
       >
         <CheckCell>
           {dirIds.length > 0 && (
-            <BaseCheckbox
+            <Checkbox
               aria-label={translate('buildDetail.selectDir', { name: node.name })}
               checked={someSelected ? 'indeterminate' : allSelected}
-              onChange={() => onToggleDir(node)}
+              onCheckedChange={() => onToggleDir(node)}
             />
           )}
         </CheckCell>
@@ -168,7 +169,7 @@ const FileTreeRow = memo(({
         <EmptyCell style={undefined} /><EmptyCell style={undefined} /><EmptyCell style={undefined} /><EmptyCell style={undefined} />
         <ActCell>
           {node.entry && (
-            <SimpleMenu label="" aria-label={translate('buildDetail.folderActions')} as={IconButton} icon={<More />}>
+            <SimpleMenu label={translate('buildDetail.folderActions')} tag={IconButton} icon={<More />}>
               <MenuItem onClick={() => onContextAction('rename', node.entry!)}>
                 <MenuItemRow><PencilIcon />{translate('buildDetail.action.rename')}</MenuItemRow>
               </MenuItem>
@@ -198,10 +199,10 @@ const FileTreeRow = memo(({
       onDragEnd={onDragEnd}
     >
       <CheckCell>
-        <BaseCheckbox
+        <Checkbox
           aria-label={translate('buildDetail.selectFile', { name: entry.name })}
           checked={isSelected}
-          onChange={() => onToggleFile(entry.id)}
+          onCheckedChange={() => onToggleFile(entry.id)}
         />
       </CheckCell>
       <NameCell $depth={depth}>
@@ -248,7 +249,7 @@ const FileTreeRow = memo(({
         </ToggleButton>
       </DlCell>
       <ActCell>
-        <SimpleMenu label="" aria-label={translate('buildDetail.fileActions')} as={IconButton} icon={<More />}>
+        <SimpleMenu label={translate('buildDetail.fileActions')} tag={IconButton} icon={<More />}>
           <MenuItem onClick={() => onContextAction('rename', entry)}>
             <MenuItemRow><PencilIcon />{translate('buildDetail.action.rename')}</MenuItemRow>
           </MenuItem>

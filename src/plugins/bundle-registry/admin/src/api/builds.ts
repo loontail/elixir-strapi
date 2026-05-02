@@ -1,4 +1,3 @@
-import { request } from '@strapi/helper-plugin';
 import type { Build } from '../../../shared/types/entities';
 import type {
   CreateBuildDto,
@@ -8,64 +7,89 @@ import type {
 } from '../../../shared/types/api';
 
 // Admin plugin routes are mounted at /${pluginName}/... by Strapi.
-// request() prepends backendURL directly, so we include the full path.
 const BASE = '/bundle-registry';
+
+const getAuthToken = (): string | null => {
+  const raw = sessionStorage.getItem('jwtToken') || localStorage.getItem('jwtToken');
+  return raw ? (JSON.parse(raw) as string | null) : null;
+};
+
+const authFetch = async <T>(
+  url: string,
+  options: RequestInit = {},
+): Promise<T> => {
+  const token = getAuthToken();
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers as Record<string, string> | undefined),
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: { message: 'Request failed' } })) as {
+      error?: { message?: string };
+    };
+    throw new Error(err?.error?.message || 'Request failed');
+  }
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
+};
 
 export const buildsApi = {
   findMany: (): Promise<Build[]> =>
-    request(`${BASE}/builds`, { method: 'GET' }) as Promise<Build[]>,
+    authFetch<Build[]>(`${BASE}/builds`, { method: 'GET' }),
 
   findOne: (slug: string): Promise<Build> =>
-    request(`${BASE}/builds/${slug}`, { method: 'GET' }) as Promise<Build>,
+    authFetch<Build>(`${BASE}/builds/${slug}`, { method: 'GET' }),
 
   create: (data: CreateBuildDto): Promise<Build> =>
-    request(`${BASE}/builds`, { method: 'POST', body: data }) as Promise<Build>,
+    authFetch<Build>(`${BASE}/builds`, { method: 'POST', body: JSON.stringify(data) }),
 
   update: (slug: string, data: UpdateBuildDto): Promise<Build> =>
-    request(`${BASE}/builds/${slug}`, { method: 'PUT', body: data }) as Promise<Build>,
+    authFetch<Build>(`${BASE}/builds/${slug}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   delete: (slug: string): Promise<void> =>
-    request(`${BASE}/builds/${slug}`, { method: 'DELETE' }) as Promise<void>,
+    authFetch<void>(`${BASE}/builds/${slug}`, { method: 'DELETE' }),
 
   regenerate: (slug: string): Promise<Build> =>
-    request(`${BASE}/builds/${slug}/regenerate`, { method: 'POST' }) as Promise<Build>,
+    authFetch<Build>(`${BASE}/builds/${slug}/regenerate`, { method: 'POST' }),
 
   deleteFile: (slug: string, entryId: number): Promise<void> =>
-    request(`${BASE}/builds/${slug}/files/${entryId}`, { method: 'DELETE' }) as Promise<void>,
+    authFetch<void>(`${BASE}/builds/${slug}/files/${entryId}`, { method: 'DELETE' }),
 
   updateFile: (slug: string, entryId: number, data: UpdateFileDto): Promise<Build> =>
-    request(`${BASE}/builds/${slug}/files/${entryId}`, {
+    authFetch<Build>(`${BASE}/builds/${slug}/files/${entryId}`, {
       method: 'PUT',
-      body: data,
-    }) as Promise<Build>,
+      body: JSON.stringify(data),
+    }),
 
   renameFile: (slug: string, entryId: number, newRelativePath: string): Promise<Build> =>
-    request(`${BASE}/builds/${slug}/files/${entryId}`, {
+    authFetch<Build>(`${BASE}/builds/${slug}/files/${entryId}`, {
       method: 'PATCH',
-      body: { newRelativePath },
-    }) as Promise<Build>,
+      body: JSON.stringify({ newRelativePath }),
+    }),
 
   rehashFile: (slug: string, entryId: number): Promise<Build> =>
-    request(`${BASE}/builds/${slug}/files/${entryId}/rehash`, { method: 'POST' }) as Promise<Build>,
+    authFetch<Build>(`${BASE}/builds/${slug}/files/${entryId}/rehash`, { method: 'POST' }),
 
   bulkDeleteFiles: (slug: string, ids: number[]): Promise<{ deleted: number }> =>
-    request(`${BASE}/builds/${slug}/files/bulk-delete`, {
+    authFetch<{ deleted: number }>(`${BASE}/builds/${slug}/files/bulk-delete`, {
       method: 'POST',
-      body: { ids },
-    }) as Promise<{ deleted: number }>,
+      body: JSON.stringify({ ids }),
+    }),
 
   validate: (slug: string): Promise<ValidateResult> =>
-    request(`${BASE}/builds/${slug}/validate`, { method: 'POST' }) as Promise<ValidateResult>,
+    authFetch<ValidateResult>(`${BASE}/builds/${slug}/validate`, { method: 'POST' }),
 
   diskSpace: (): Promise<{ free: number | null; total: number | null }> =>
-    request(`${BASE}/disk-space`, { method: 'GET' }) as Promise<{ free: number | null; total: number | null }>,
+    authFetch<{ free: number | null; total: number | null }>(`${BASE}/disk-space`, { method: 'GET' }),
 };
 
-/** Multipart upload helper (fetch instead of request() because FormData isn't supported). */
+/** Multipart upload helper (uses fetch with manual auth because FormData doesn't set Content-Type). */
 const multipartPost = async (url: string, formData: FormData): Promise<unknown> => {
-  const rawToken: string | null =
-    sessionStorage.getItem('jwtToken') || localStorage.getItem('jwtToken');
-  const token = rawToken ? (JSON.parse(rawToken) as string | null) : null;
+  const token = getAuthToken();
   const res = await fetch(url, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},

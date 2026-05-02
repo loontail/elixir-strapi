@@ -13,8 +13,8 @@ const bootstrap = ({ strapi }: { strapi: StrapiInstance }): void => {
 
   strapi.db.lifecycles.subscribe({
     models: ['api::client.client'],
-    async afterUpdate(event) {
-      const { result } = event as unknown as AfterUpdateEvent;
+    async afterUpdate(event: unknown) {
+      const { result } = event as AfterUpdateEvent;
       const fileBuildSlug = result.fileBuild;
       if (!fileBuildSlug) return;
 

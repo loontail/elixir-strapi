@@ -1,8 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
-  ContentLayout,
-  HeaderLayout,
   Main,
   Button,
   Table,
@@ -14,12 +12,10 @@ import {
   Typography,
   Loader,
   EmptyStateLayout,
-  Dialog,
-  DialogBody,
-  DialogFooter,
+  Modal,
 } from '@strapi/design-system';
 import { Plus, Trash } from '@strapi/icons';
-import { useNotification } from '@strapi/helper-plugin';
+import { useNotification, Layouts } from '@strapi/strapi/admin';
 import { useIntl, FormattedMessage } from 'react-intl';
 import pluginId from '../../pluginId';
 import { buildsApi } from '../../api/builds';
@@ -34,8 +30,8 @@ const BuildListPage = () => {
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const history = useHistory();
-  const toggleNotification = useNotification();
+  const navigate = useNavigate();
+  const { toggleNotification } = useNotification();
   const { formatMessage } = useIntl();
 
   const translate = (id: string, values?: Record<string, string>) =>
@@ -75,26 +71,26 @@ const BuildListPage = () => {
   if (loading) {
     return (
       <Main>
-        <HeaderLayout title={translate('buildList.title')} subtitle={translate('buildList.subtitle')} />
-        <ContentLayout>
+        <Layouts.Header title={translate('buildList.title')} subtitle={translate('buildList.subtitle')} />
+        <Layouts.Content>
           <Loader>{translate('buildList.loading')}</Loader>
-        </ContentLayout>
+        </Layouts.Content>
       </Main>
     );
   }
 
   return (
     <Main>
-      <HeaderLayout
+      <Layouts.Header
         title={translate('buildList.title')}
         subtitle={translate('buildList.subtitle')}
         primaryAction={
-          <Button startIcon={<Plus />} onClick={() => history.push(`/plugins/${pluginId}/new`)}>
+          <Button startIcon={<Plus />} onClick={() => navigate(`/plugins/${pluginId}/new`)}>
             {translate('buildList.newBuild')}
           </Button>
         }
       />
-      <ContentLayout>
+      <Layouts.Content>
         {builds.length === 0 ? (
           <EmptyStateLayout
             icon={<span>📦</span>}
@@ -103,7 +99,7 @@ const BuildListPage = () => {
               <Button
                 variant="secondary"
                 startIcon={<Plus />}
-                onClick={() => history.push(`/plugins/${pluginId}/new`)}
+                onClick={() => navigate(`/plugins/${pluginId}/new`)}
               >
                 {translate('buildList.newBuild')}
               </Button>
@@ -126,7 +122,7 @@ const BuildListPage = () => {
               {builds.map((build) => (
                 <ClickableTr
                   key={build.id}
-                  onClick={() => history.push(`/plugins/${pluginId}/${build.slug}`)}
+                  onClick={() => navigate(`/plugins/${pluginId}/${build.slug}`)}
                 >
                   <Td><Typography fontWeight="semiBold">{build.name}</Typography></Td>
                   <Td><Typography textColor="neutral600">{build.slug}</Typography></Td>
@@ -152,36 +148,31 @@ const BuildListPage = () => {
             </Tbody>
           </Table>
         )}
-      </ContentLayout>
+      </Layouts.Content>
 
-      {confirmDelete && (
-        <Dialog
-          onClose={() => setConfirmDelete(null)}
-          title={translate('buildList.deleteConfirm.title')}
-          isOpen
-        >
-          <DialogBody>
+      <Modal.Root open={!!confirmDelete} onOpenChange={(open: boolean) => { if (!open) setConfirmDelete(null); }}>
+        <Modal.Content>
+          <Modal.Header>
+            <Modal.Title>{translate('buildList.deleteConfirm.title')}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
             <Typography>
               <FormattedMessage
                 id={getTranslation('buildList.deleteConfirm.body')}
                 values={{ slug: <strong>{confirmDelete}</strong> }}
               />
             </Typography>
-          </DialogBody>
-          <DialogFooter
-            startAction={
-              <Button variant="tertiary" onClick={() => setConfirmDelete(null)}>
-                {translate('buildList.deleteConfirm.cancel')}
-              </Button>
-            }
-            endAction={
-              <Button variant="danger-light" onClick={handleDeleteConfirm} loading={deleting}>
-                {translate('buildList.deleteConfirm.confirm')}
-              </Button>
-            }
-          />
-        </Dialog>
-      )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="tertiary" onClick={() => setConfirmDelete(null)}>
+              {translate('buildList.deleteConfirm.cancel')}
+            </Button>
+            <Button variant="danger-light" onClick={handleDeleteConfirm} loading={deleting}>
+              {translate('buildList.deleteConfirm.confirm')}
+            </Button>
+          </Modal.Footer>
+        </Modal.Content>
+      </Modal.Root>
     </Main>
   );
 };

@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
-  Select,
-  Option,
+  SingleSelect,
+  SingleSelectOption,
   Field,
-  FieldLabel,
-  FieldError,
-  FieldHint,
   Loader,
 } from '@strapi/design-system';
-import { request } from '@strapi/helper-plugin';
 import { useIntl } from 'react-intl';
+import { buildsApi } from '../../api/builds';
 import { getTranslation } from '../../utils/getTranslation';
 import type { Build } from '../../../../shared/types/entities';
 
@@ -46,25 +43,26 @@ const BuildPickerInput = ({
     formatMessage({ id: getTranslation(id), defaultMessage: id });
 
   useEffect(() => {
-    (request('/bundle-registry/builds', { method: 'GET' }) as Promise<Build[]>)
+    buildsApi
+      .findMany()
       .then((data) => setBuilds(Array.isArray(data) ? data : []))
       .catch(() => setBuilds([]))
       .finally(() => setLoading(false));
   }, []);
 
-  const handleChange = (selected: string) => {
-    onChange({ target: { name, value: selected || '', type: attribute.type } });
+  const handleChange = (selected: string | number) => {
+    onChange({ target: { name, value: String(selected || ''), type: attribute.type } });
   };
 
   return (
-    <Field name={name} id={name} error={error} hint={description?.defaultMessage}>
-      <FieldLabel action={labelAction} required={required}>
+    <Field.Root name={name} id={name} error={error ?? undefined} hint={description?.defaultMessage} required={required}>
+      <Field.Label action={labelAction}>
         {intlLabel?.defaultMessage || translate('build-picker.label')}
-      </FieldLabel>
+      </Field.Label>
       {loading ? (
         <Loader small />
       ) : (
-        <Select
+        <SingleSelect
           id={name}
           name={name}
           value={value || ''}
@@ -75,15 +73,15 @@ const BuildPickerInput = ({
           onClear={() => handleChange('')}
         >
           {builds.map((build) => (
-            <Option key={build.slug} value={build.slug}>
+            <SingleSelectOption key={build.slug} value={build.slug}>
               {build.name} ({build.slug}) — {build.status}
-            </Option>
+            </SingleSelectOption>
           ))}
-        </Select>
+        </SingleSelect>
       )}
-      <FieldError />
-      <FieldHint />
-    </Field>
+      <Field.Error />
+      <Field.Hint />
+    </Field.Root>
   );
 };
 

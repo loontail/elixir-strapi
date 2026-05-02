@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Button, Flex } from '@strapi/design-system';
-import { Refresh, Upload, Plus } from '@strapi/icons';
+import { ArrowClockwise, Upload, Plus } from '@strapi/icons';
 import { useIntl } from 'react-intl';
 import { getTranslation } from '../../../../utils/getTranslation';
 
@@ -31,7 +31,7 @@ const Toolbar = memo(
       <Flex gap={2}>
         <Button
           variant="secondary"
-          startIcon={<Refresh />}
+          startIcon={<ArrowClockwise />}
           loading={validating}
           disabled={uploading || regenerating}
           onClick={onValidate}
@@ -40,7 +40,7 @@ const Toolbar = memo(
         </Button>
         <Button
           variant="secondary"
-          startIcon={<Refresh />}
+          startIcon={<ArrowClockwise />}
           loading={regenerating}
           disabled={uploading || validating}
           onClick={onRegenerate}

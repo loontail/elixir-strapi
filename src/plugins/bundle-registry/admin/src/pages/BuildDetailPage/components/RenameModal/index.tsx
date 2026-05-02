@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import {
-  ModalLayout,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
+  Modal,
   Button,
   Typography,
   TextInput,
 } from '@strapi/design-system';
-import { useNotification } from '@strapi/helper-plugin';
+import { useNotification } from '@strapi/strapi/admin';
 import { useIntl } from 'react-intl';
 import { buildsApi } from '../../../../api/builds';
 import { getTranslation } from '../../../../utils/getTranslation';
@@ -22,7 +19,7 @@ interface RenameModalProps {
 }
 
 const RenameModal = ({ entry, slug, onClose, onSuccess }: RenameModalProps) => {
-  const toggleNotification = useNotification();
+  const { toggleNotification } = useNotification();
   const { formatMessage } = useIntl();
   const translate = (id: string, values?: Record<string, string | number>) =>
     formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
@@ -62,35 +59,35 @@ const RenameModal = ({ entry, slug, onClose, onSuccess }: RenameModalProps) => {
   };
 
   return (
-    <ModalLayout onClose={onClose} labelledBy="rename-title">
-      <ModalHeader>
-        <Typography fontWeight="bold" textColor="neutral800" as="h2" id="rename-title">
-          {translate(entry.isDir ? 'modal.rename.title.folder' : 'modal.rename.title.file')}
-        </Typography>
-      </ModalHeader>
-      <ModalBody>
-        <TextInput
-          label={translate('modal.rename.field.label')}
-          name="newName"
-          value={newName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewName(e.target.value)}
-          hint={translate('modal.rename.field.hint', { name: entry.name })}
-          required
-        />
-      </ModalBody>
-      <ModalFooter
-        startActions={
+    <Modal.Root open onOpenChange={(open: boolean) => { if (!open) onClose(); }}>
+      <Modal.Content>
+        <Modal.Header>
+          <Modal.Title>
+            <Typography fontWeight="bold" textColor="neutral800">
+              {translate(entry.isDir ? 'modal.rename.title.folder' : 'modal.rename.title.file')}
+            </Typography>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <TextInput
+            label={translate('modal.rename.field.label')}
+            name="newName"
+            value={newName}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewName(e.target.value)}
+            hint={translate('modal.rename.field.hint', { name: entry.name })}
+            required
+          />
+        </Modal.Body>
+        <Modal.Footer>
           <Button variant="tertiary" onClick={onClose}>
             {translate('modal.rename.cancel')}
           </Button>
-        }
-        endActions={
           <Button onClick={handleSubmit} loading={saving}>
             {translate('modal.rename.save')}
           </Button>
-        }
-      />
-    </ModalLayout>
+        </Modal.Footer>
+      </Modal.Content>
+    </Modal.Root>
   );
 };
 

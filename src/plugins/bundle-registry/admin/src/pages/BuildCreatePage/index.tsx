@@ -1,18 +1,15 @@
 import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
-  ContentLayout,
-  HeaderLayout,
   Main,
   Button,
   Box,
   Grid,
-  GridItem,
   TextInput,
   Textarea,
 } from '@strapi/design-system';
 import { ArrowLeft, Check } from '@strapi/icons';
-import { useNotification } from '@strapi/helper-plugin';
+import { useNotification, Layouts } from '@strapi/strapi/admin';
 import { useIntl } from 'react-intl';
 import pluginId from '../../pluginId';
 import { buildsApi } from '../../api/builds';
@@ -34,8 +31,8 @@ const autoSlug = (name: string): string =>
     .slice(0, 64);
 
 const BuildCreatePage = () => {
-  const history = useHistory();
-  const toggleNotification = useNotification();
+  const navigate = useNavigate();
+  const { toggleNotification } = useNotification();
   const { formatMessage } = useIntl();
   const [form, setForm] = useState<BuildForm>({ name: '', slug: '', description: '', version: '' });
   const [submitting, setSubmitting] = useState(false);
@@ -63,7 +60,7 @@ const BuildCreatePage = () => {
     setSubmitting(true);
     try {
       await buildsApi.create(form);
-      history.push(`/plugins/${pluginId}/${form.slug}`);
+      navigate(`/plugins/${pluginId}/${form.slug}`);
     } catch (err) {
       toggleNotification({ type: 'warning', message: (err as Error).message });
     } finally {
@@ -73,14 +70,14 @@ const BuildCreatePage = () => {
 
   return (
     <Main>
-      <HeaderLayout
+      <Layouts.Header
         title={translate('buildCreate.title')}
         subtitle={translate('buildCreate.subtitle')}
         navigationAction={
           <Button
             variant="tertiary"
             startIcon={<ArrowLeft />}
-            onClick={() => history.push(`/plugins/${pluginId}`)}
+            onClick={() => navigate(`/plugins/${pluginId}`)}
           >
             {translate('buildCreate.back')}
           </Button>
@@ -91,10 +88,10 @@ const BuildCreatePage = () => {
           </Button>
         }
       />
-      <ContentLayout>
+      <Layouts.Content>
         <Box background="neutral0" padding={6} shadow="filterShadow" hasRadius>
-          <Grid gap={4}>
-            <GridItem col={6}>
+          <Grid.Root gap={4}>
+            <Grid.Item col={6}>
               <TextInput
                 label={translate('buildCreate.field.name')}
                 name="name"
@@ -103,8 +100,8 @@ const BuildCreatePage = () => {
                 required
                 placeholder={translate('buildCreate.field.name.placeholder')}
               />
-            </GridItem>
-            <GridItem col={6}>
+            </Grid.Item>
+            <Grid.Item col={6}>
               <TextInput
                 label={translate('buildCreate.field.slug')}
                 name="slug"
@@ -114,8 +111,8 @@ const BuildCreatePage = () => {
                 placeholder={translate('buildCreate.field.slug.placeholder')}
                 hint={translate('buildCreate.field.slug.hint')}
               />
-            </GridItem>
-            <GridItem col={6}>
+            </Grid.Item>
+            <Grid.Item col={6}>
               <TextInput
                 label={translate('buildCreate.field.version')}
                 name="version"
@@ -123,8 +120,8 @@ const BuildCreatePage = () => {
                 onChange={handleChange('version')}
                 placeholder={translate('buildCreate.field.version.placeholder')}
               />
-            </GridItem>
-            <GridItem col={12}>
+            </Grid.Item>
+            <Grid.Item col={12}>
               <Textarea
                 label={translate('buildCreate.field.description')}
                 name="description"
@@ -132,10 +129,10 @@ const BuildCreatePage = () => {
                 onChange={handleChange('description')}
                 placeholder={translate('buildCreate.field.description.placeholder')}
               />
-            </GridItem>
-          </Grid>
+            </Grid.Item>
+          </Grid.Root>
         </Box>
-      </ContentLayout>
+      </Layouts.Content>
     </Main>
   );
 };

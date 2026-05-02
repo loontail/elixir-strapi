@@ -1,5 +1,4 @@
 import type { ComponentType } from 'react';
-import { prefixPluginTranslations } from '@strapi/helper-plugin';
 import pluginPkg from '../../package.json';
 import pluginId from './pluginId';
 import Initializer from './components/Initializer';
@@ -7,6 +6,9 @@ import PluginIcon from './components/PluginIcon';
 import BuildPickerInput from './components/BuildPickerInput';
 
 const name: string = pluginPkg.strapi.name;
+
+const prefixPluginTranslations = (trad: Record<string, string>, id: string): Record<string, string> =>
+  Object.fromEntries(Object.entries(trad).map(([key, value]) => [`${id}.${key}`, value]));
 
 export default {
   register(app: {

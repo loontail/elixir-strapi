@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useNotification } from '@strapi/helper-plugin';
+import { useNotification } from '@strapi/strapi/admin';
 import { useIntl } from 'react-intl';
 import { buildsApi, uploadArchive as uploadArchiveApi } from '../../../api/builds';
 import { getTranslation } from '../../../utils/getTranslation';
@@ -46,7 +46,7 @@ const useFileOperations = ({
   validation,
   onOpenModal,
 }: UseFileOperationsOptions): UseFileOperationsResult => {
-  const toggleNotification = useNotification();
+  const { toggleNotification } = useNotification();
   const { formatMessage } = useIntl();
   const translate = useCallback(
     (id: string, values?: Record<string, string | number>) =>

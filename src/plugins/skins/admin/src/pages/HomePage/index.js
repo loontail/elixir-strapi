@@ -1,20 +1,12 @@
-/*
- *
- * HomePage
- *
- */
-
 import React from 'react';
-// import PropTypes from 'prop-types';
 import pluginId from '../../pluginId';
 
-const HomePage = () => {
-  return (
-    <div>
-      <h1>{pluginId}&apos;s HomePage</h1>
-      <p>Happy coding</p>
-    </div>
+const HomePage = () =>
+  React.createElement(
+    'div',
+    null,
+    React.createElement('h1', null, `${pluginId}'s HomePage`),
+    React.createElement('p', null, 'Happy coding')
   );
-};
 
 export default HomePage;

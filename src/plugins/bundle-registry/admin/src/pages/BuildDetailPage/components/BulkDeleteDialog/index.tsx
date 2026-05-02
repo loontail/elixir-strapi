@@ -1,6 +1,10 @@
 import { useState } from 'react';
-import { Dialog, DialogBody, DialogFooter, Button, Typography } from '@strapi/design-system';
-import { useNotification } from '@strapi/helper-plugin';
+import {
+  Modal,
+  Button,
+  Typography,
+} from '@strapi/design-system';
+import { useNotification } from '@strapi/strapi/admin';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { buildsApi } from '../../../../api/builds';
 import { getTranslation } from '../../../../utils/getTranslation';
@@ -13,7 +17,7 @@ interface BulkDeleteDialogProps {
 }
 
 const BulkDeleteDialog = ({ ids, slug, onClose, onSuccess }: BulkDeleteDialogProps) => {
-  const toggleNotification = useNotification();
+  const { toggleNotification } = useNotification();
   const { formatMessage } = useIntl();
   const translate = (id: string, values?: Record<string, string | number>) =>
     formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
@@ -33,28 +37,29 @@ const BulkDeleteDialog = ({ ids, slug, onClose, onSuccess }: BulkDeleteDialogPro
   };
 
   return (
-    <Dialog onClose={onClose} title={translate('modal.bulkDelete.title')} isOpen>
-      <DialogBody>
-        <Typography>
-          <FormattedMessage
-            id={getTranslation('modal.bulkDelete.body')}
-            values={{ count: <strong>{ids.length}</strong> }}
-          />
-        </Typography>
-      </DialogBody>
-      <DialogFooter
-        startAction={
+    <Modal.Root open onOpenChange={(open: boolean) => { if (!open) onClose(); }}>
+      <Modal.Content>
+        <Modal.Header>
+          <Modal.Title>{translate('modal.bulkDelete.title')}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Typography>
+            <FormattedMessage
+              id={getTranslation('modal.bulkDelete.body')}
+              values={{ count: <strong>{ids.length}</strong> }}
+            />
+          </Typography>
+        </Modal.Body>
+        <Modal.Footer>
           <Button variant="tertiary" onClick={onClose}>
             {translate('modal.bulkDelete.cancel')}
           </Button>
-        }
-        endAction={
           <Button variant="danger-light" onClick={handleConfirm} loading={deleting}>
             {translate('modal.bulkDelete.confirm', { count: ids.length })}
           </Button>
-        }
-      />
-    </Dialog>
+        </Modal.Footer>
+      </Modal.Content>
+    </Modal.Root>
   );
 };
 

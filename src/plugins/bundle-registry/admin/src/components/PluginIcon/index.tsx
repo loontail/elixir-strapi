@@ -1,5 +1,5 @@
-import { Layer } from '@strapi/icons';
+import { Stack } from '@strapi/icons';
 
-const PluginIcon = () => <Layer />;
+const PluginIcon = () => <Stack />;
 
 export default PluginIcon;

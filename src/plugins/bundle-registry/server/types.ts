@@ -1,12 +1,19 @@
-import type { LoadedStrapi } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
 
-export type { LoadedStrapi as StrapiInstance };
+export type StrapiInstance = Core.Strapi;
+
+export interface FormidableFile {
+  filepath: string;
+  originalFilename: string | null;
+  mimetype: string | null;
+  size: number;
+}
 
 export interface KoaContext {
   params: Record<string, string>;
   request: {
     body: unknown;
-    files: Record<string, { type: string; name: string; path: string } | undefined>;
+    files?: Record<string, FormidableFile | FormidableFile[] | undefined>;
   };
   body: unknown;
   status: number;

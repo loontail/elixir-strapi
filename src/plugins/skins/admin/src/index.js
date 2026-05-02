@@ -1,10 +1,12 @@
-import { prefixPluginTranslations } from '@strapi/helper-plugin';
 import pluginPkg from '../../package.json';
 import pluginId from './pluginId';
 import Initializer from './components/Initializer';
 import PluginIcon from './components/PluginIcon';
 
 const name = pluginPkg.strapi.name;
+
+const prefixPluginTranslations = (trad, pluginId) =>
+  Object.fromEntries(Object.entries(trad).map(([key, value]) => [`${pluginId}.${key}`, value]));
 
 export default {
   register(app) {
@@ -20,13 +22,7 @@ export default {
 
         return component;
       },
-      permissions: [
-        // Uncomment to set the permissions of the plugin here
-        // {
-        //   action: '', // the action name should be plugin::plugin-name.actionType
-        //   subject: null,
-        // },
-      ],
+      permissions: [],
     });
     app.registerPlugin({
       id: pluginId,

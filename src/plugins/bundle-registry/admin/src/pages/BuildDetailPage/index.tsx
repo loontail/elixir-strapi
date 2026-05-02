@@ -1,8 +1,6 @@
 import { useRef, useMemo, useCallback, useState } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ContentLayout,
-  HeaderLayout,
   Main,
   Button,
   Box,
@@ -10,6 +8,7 @@ import {
   Loader,
   Flex,
 } from '@strapi/design-system';
+import { Layouts } from '@strapi/strapi/admin';
 import { ArrowLeft, Trash } from '@strapi/icons';
 import { useIntl, FormattedMessage } from 'react-intl';
 import pluginId from '../../pluginId';
@@ -51,8 +50,8 @@ import {
 import type { FileEntry } from '../../../../shared/types/entities';
 
 const BuildDetailPage = () => {
-  const { slug } = useParams<{ slug: string }>();
-  const history = useHistory();
+  const { slug } = useParams() as { slug: string };
+  const navigate = useNavigate();
   const archiveInputRef = useRef<HTMLInputElement>(null);
   const { formatMessage } = useIntl();
   const translate = (id: string, values?: Record<string, string | number>) =>
@@ -145,10 +144,10 @@ const BuildDetailPage = () => {
   if (loading && !build) {
     return (
       <Main>
-        <HeaderLayout title="" />
-        <ContentLayout>
+        <Layouts.Header title="" />
+        <Layouts.Content>
           <Loader>{translate('buildDetail.loading')}</Loader>
-        </ContentLayout>
+        </Layouts.Content>
       </Main>
     );
   }
@@ -156,14 +155,14 @@ const BuildDetailPage = () => {
   if (!build) {
     return (
       <Main>
-        <HeaderLayout title="" />
-        <ContentLayout>
+        <Layouts.Header title="" />
+        <Layouts.Content>
           <Box background="danger100" padding={5} hasRadius>
             <Typography textColor="danger600">
               {translate('buildDetail.notFound', { slug })}
             </Typography>
           </Box>
-        </ContentLayout>
+        </Layouts.Content>
       </Main>
     );
   }
@@ -185,17 +184,19 @@ const BuildDetailPage = () => {
         onChange={handleArchiveInput}
       />
 
-      <HeaderLayout
+      <Layouts.Header
         title={build.name}
         subtitle={`${build.slug}${build.version ? ` · v${build.version}` : ''}`}
         navigationAction={
-          <Button
-            variant="tertiary"
-            startIcon={<ArrowLeft />}
-            onClick={() => history.push(`/plugins/${pluginId}`)}
-          >
-            {translate('buildDetail.back')}
-          </Button>
+          <Box display="inline-flex">
+            <Button
+              variant="tertiary"
+              startIcon={<ArrowLeft />}
+              onClick={() => navigate(`/plugins/${pluginId}`)}
+            >
+              {translate('buildDetail.back')}
+            </Button>
+          </Box>
         }
         primaryAction={
           <Toolbar
@@ -210,7 +211,7 @@ const BuildDetailPage = () => {
         }
       />
 
-      <ContentLayout>
+      <Layouts.Content>
         <StatsBar build={build} />
 
         {build.processingError && (
@@ -368,7 +369,7 @@ const BuildDetailPage = () => {
             />
           )}
         </TablePanel>
-      </ContentLayout>
+      </Layouts.Content>
 
       {modal?.type === 'add' && (
         <AddFileModal slug={slug} onClose={closeModal} onSuccess={onSuccess} />

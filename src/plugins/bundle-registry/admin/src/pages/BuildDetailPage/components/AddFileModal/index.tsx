@@ -1,16 +1,13 @@
 import { useRef, useState } from 'react';
 import {
-  useTheme,
-  ModalLayout,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
+  Modal,
   Button,
   Typography,
   Box,
   TextInput,
 } from '@strapi/design-system';
-import { useNotification } from '@strapi/helper-plugin';
+import { useTheme } from 'styled-components';
+import { useNotification } from '@strapi/strapi/admin';
 import { useIntl } from 'react-intl';
 import { UploadIcon, FileIcon } from '../../../../components/Icons';
 import { uploadFile } from '../../../../api/builds';
@@ -37,7 +34,7 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
   const theme = useTheme();
   const colors = theme.colors;
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const toggleNotification = useNotification();
+  const { toggleNotification } = useNotification();
   const { formatMessage } = useIntl();
   const translate = (id: string, values?: Record<string, string | number>) =>
     formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
@@ -83,99 +80,97 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
   };
 
   return (
-    <ModalLayout onClose={onClose} labelledBy="add-file-title">
-      <ModalHeader>
-        <Typography fontWeight="bold" textColor="neutral800" as="h2" id="add-file-title">
-          {translate(isReplace ? 'modal.addFile.title.replace' : 'modal.addFile.title.add')}
-        </Typography>
-      </ModalHeader>
-      <ModalBody>
-        <Box paddingBottom={5}>
-          <HiddenFileInput
-            ref={fileInputRef}
-            type="file"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => pickFile(e.target.files?.[0])}
-          />
-          <DropZone
-            $dragging={dragOver}
-            $filled={!!file}
-            onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-          >
-            {file ? (
-              <div>
-                <DropZoneIconRow>
-                  <FileIcon size={32} color={colors.success600} />
-                </DropZoneIconRow>
-                <Typography
-                  variant="omega"
-                  fontWeight="bold"
-                  textColor="success700"
-                  as={DropZoneFileName}
-                >
-                  {file.name}
-                </Typography>
-                <Typography variant="pi" textColor="success600" as={DropZoneFileSize}>
-                  {formatBytes(file.size)}
-                </Typography>
-                <Typography variant="pi" textColor="neutral500">
-                  {translate('modal.addFile.dropzone.change')}
-                </Typography>
-              </div>
-            ) : (
-              <div>
-                <DropZoneIconRow>
-                  <UploadIcon size={32} color={dragOver ? colors.primary500 : colors.neutral400} />
-                </DropZoneIconRow>
-                <Typography
-                  variant="omega"
-                  fontWeight="semiBold"
-                  textColor={dragOver ? 'primary600' : 'neutral700'}
-                  as={DropZonePrompt}
-                >
-                  {translate(dragOver ? 'modal.addFile.dropzone.active' : 'modal.addFile.dropzone.idle')}
-                </Typography>
-                {isReplace && initialPath && (
-                  <Typography variant="pi" textColor="neutral500" as={MonoHint}>
-                    {translate('modal.addFile.replacing', { path: initialPath })}
+    <Modal.Root open onOpenChange={(open: boolean) => { if (!open) onClose(); }}>
+      <Modal.Content>
+        <Modal.Header>
+          <Modal.Title>
+            {translate(isReplace ? 'modal.addFile.title.replace' : 'modal.addFile.title.add')}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Box paddingBottom={5}>
+            <HiddenFileInput
+              ref={fileInputRef}
+              type="file"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => pickFile(e.target.files?.[0])}
+            />
+            <DropZone
+              $dragging={dragOver}
+              $filled={!!file}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+            >
+              {file ? (
+                <div>
+                  <DropZoneIconRow>
+                    <FileIcon size={32} color={colors.success600} />
+                  </DropZoneIconRow>
+                  <Typography
+                    variant="omega"
+                    fontWeight="bold"
+                    textColor="success700"
+                    as={DropZoneFileName}
+                  >
+                    {file.name}
                   </Typography>
-                )}
-              </div>
+                  <Typography variant="pi" textColor="success600" as={DropZoneFileSize}>
+                    {formatBytes(file.size)}
+                  </Typography>
+                  <Typography variant="pi" textColor="neutral500">
+                    {translate('modal.addFile.dropzone.change')}
+                  </Typography>
+                </div>
+              ) : (
+                <div>
+                  <DropZoneIconRow>
+                    <UploadIcon size={32} color={dragOver ? colors.primary500 : colors.neutral400} />
+                  </DropZoneIconRow>
+                  <Typography
+                    variant="omega"
+                    fontWeight="semiBold"
+                    textColor={dragOver ? 'primary600' : 'neutral700'}
+                    as={DropZonePrompt}
+                  >
+                    {translate(dragOver ? 'modal.addFile.dropzone.active' : 'modal.addFile.dropzone.idle')}
+                  </Typography>
+                  {isReplace && initialPath && (
+                    <Typography variant="pi" textColor="neutral500" as={MonoHint}>
+                      {translate('modal.addFile.replacing', { path: initialPath })}
+                    </Typography>
+                  )}
+                </div>
+              )}
+            </DropZone>
+          </Box>
+          <TextInput
+            label={translate('modal.addFile.targetPath.label')}
+            name="targetPath"
+            value={targetPath}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTargetPath(e.target.value)}
+            placeholder={translate('modal.addFile.targetPath.placeholder')}
+            hint={translate(
+              isReplace
+                ? 'modal.addFile.targetPath.hint.replace'
+                : 'modal.addFile.targetPath.hint.add',
             )}
-          </DropZone>
-        </Box>
-        <TextInput
-          label={translate('modal.addFile.targetPath.label')}
-          name="targetPath"
-          value={targetPath}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTargetPath(e.target.value)}
-          placeholder={translate('modal.addFile.targetPath.placeholder')}
-          hint={translate(
-            isReplace
-              ? 'modal.addFile.targetPath.hint.replace'
-              : 'modal.addFile.targetPath.hint.add',
-          )}
-          required
-        />
-      </ModalBody>
-      <ModalFooter
-        startActions={
+            required
+          />
+        </Modal.Body>
+        <Modal.Footer>
           <Button variant="tertiary" onClick={onClose}>
             {translate('modal.addFile.cancel')}
           </Button>
-        }
-        endActions={
           <Button onClick={handleSubmit} loading={uploading} disabled={!file}>
             {translate('modal.addFile.upload')}
           </Button>
-        }
-      />
-    </ModalLayout>
+        </Modal.Footer>
+      </Modal.Content>
+    </Modal.Root>
   );
 };
 

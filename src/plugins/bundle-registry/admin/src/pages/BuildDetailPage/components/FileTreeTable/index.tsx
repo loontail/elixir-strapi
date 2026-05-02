@@ -1,5 +1,6 @@
 import { memo, useState, useCallback } from 'react';
-import { useTheme, BaseCheckbox, Tooltip } from '@strapi/design-system';
+import { useTheme } from 'styled-components';
+import { Checkbox, Tooltip } from '@strapi/design-system';
 import { useIntl } from 'react-intl';
 import { FileTreeRow } from '../FileTreeRow';
 import {
@@ -186,10 +187,10 @@ const FileTreeTable = memo(
           }}
         >
           <CheckCell>
-            <BaseCheckbox
+            <Checkbox
               aria-label={translate('buildDetail.selectAll')}
               checked={someSelected ? 'indeterminate' : allSelected}
-              onChange={onToggleAll}
+              onCheckedChange={onToggleAll}
             />
           </CheckCell>
           <NameCell $depth={0}>

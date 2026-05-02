@@ -33,7 +33,10 @@ import { extractZip } from '../services/archive';
 import { scanDirectory, computeFileSha256 } from '../services/scanner';
 import { generate as generateManifest } from '../services/manifest-generator';
 import type { Build, FileEntry } from '../../shared/types/entities';
-import type { StrapiInstance as Strapi, KoaContext } from '../types';
+import type { StrapiInstance as Strapi, KoaContext, FormidableFile } from '../types';
+
+const pickFile = (raw: FormidableFile | FormidableFile[] | undefined): FormidableFile | undefined =>
+  Array.isArray(raw) ? raw[0] : raw;
 
 const removeEmptyDirsUpward = (dirPath: string, rootPath: string): void => {
   if (dirPath === rootPath || !dirPath.startsWith(rootPath)) return;
@@ -142,7 +145,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
       // Processing state is stale — allow re-upload
     }
 
-    const file = ctx.request.files?.archive;
+    const file = pickFile(ctx.request.files?.archive);
     if (!file)
       return ctx.badRequest('No archive file provided. Send the ZIP as form field "archive".');
 
@@ -151,7 +154,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
       'application/x-zip-compressed',
       'application/octet-stream',
     ];
-    if (!allowedTypes.includes(file.type) && !file.name.endsWith('.zip')) {
+    if (!allowedTypes.includes(file.mimetype ?? '') && !file.originalFilename?.endsWith('.zip')) {
       return ctx.badRequest('File must be a ZIP archive (.zip)');
     }
 
@@ -165,7 +168,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
       const maxZipSize: number = pluginConfig('maxZipSize') || 10 * 1024 * 1024 * 1024;
       const maxZipEntries: number = pluginConfig('maxZipEntries') || 100_000;
 
-      extractZip(file.path, filesPath, { maxSize: maxZipSize, maxEntries: maxZipEntries });
+      extractZip(file.filepath, filesPath, { maxSize: maxZipSize, maxEntries: maxZipEntries });
 
       const scanResults = await scanDirectory(filesPath);
       await buildService.upsertFileEntries(build.id, scanResults);
@@ -235,11 +238,11 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const build: Build | null = await buildService.findOne(slug);
     if (!build) return ctx.notFound('Build not found');
 
-    const file = ctx.request.files?.file;
+    const file = pickFile(ctx.request.files?.file);
     if (!file) return ctx.badRequest('No file provided. Send the file as form field "file".');
 
     const rawTargetPath: string =
-      (ctx.request.body as { targetPath?: string })?.targetPath || file.name;
+      (ctx.request.body as { targetPath?: string })?.targetPath || file.originalFilename || '';
 
     const normalized = path.normalize(rawTargetPath).replace(/\\/g, '/');
     if (normalized.startsWith('..') || path.isAbsolute(normalized)) {
@@ -254,7 +257,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     }
 
     mkdirSync(path.dirname(destPath), { recursive: true });
-    copyFileSync(file.path, destPath);
+    copyFileSync(file.filepath, destPath);
 
     const stat = statSync(destPath);
     const sha256 = await computeFileSha256(destPath);
