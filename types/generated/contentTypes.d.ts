@@ -472,7 +472,7 @@ export interface ApiClientClient extends Schema.CollectionType {
         };
       }>;
     artifactsPath: Attribute.String &
-      Attribute.CustomField<'plugin::file-library.build-picker'> &
+      Attribute.CustomField<'plugin::bundle-registry.build-picker'> &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
@@ -731,7 +731,7 @@ export interface PluginUploadFolder extends Schema.CollectionType {
   };
 }
 
-export interface PluginFileLibraryFileBuild extends Schema.CollectionType {
+export interface PluginBundleRegistryFileBuild extends Schema.CollectionType {
   collectionName: 'file_builds';
   info: {
     singularName: 'file-build';
@@ -752,7 +752,7 @@ export interface PluginFileLibraryFileBuild extends Schema.CollectionType {
   };
   attributes: {
     name: Attribute.String & Attribute.Required;
-    slug: Attribute.UID<'plugin::file-library.file-build', 'name'> &
+    slug: Attribute.UID<'plugin::bundle-registry.file-build', 'name'> &
       Attribute.Required;
     description: Attribute.Text;
     version: Attribute.String;
@@ -763,20 +763,20 @@ export interface PluginFileLibraryFileBuild extends Schema.CollectionType {
     processingError: Attribute.Text;
     lastGeneratedAt: Attribute.DateTime;
     fileEntries: Attribute.Relation<
-      'plugin::file-library.file-build',
+      'plugin::bundle-registry.file-build',
       'oneToMany',
-      'plugin::file-library.file-entry'
+      'plugin::bundle-registry.file-entry'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
-      'plugin::file-library.file-build',
+      'plugin::bundle-registry.file-build',
       'oneToOne',
       'admin::user'
     > &
       Attribute.Private;
     updatedBy: Attribute.Relation<
-      'plugin::file-library.file-build',
+      'plugin::bundle-registry.file-build',
       'oneToOne',
       'admin::user'
     > &
@@ -784,7 +784,7 @@ export interface PluginFileLibraryFileBuild extends Schema.CollectionType {
   };
 }
 
-export interface PluginFileLibraryFileEntry extends Schema.CollectionType {
+export interface PluginBundleRegistryFileEntry extends Schema.CollectionType {
   collectionName: 'file_entries';
   info: {
     singularName: 'file-entry';
@@ -805,9 +805,9 @@ export interface PluginFileLibraryFileEntry extends Schema.CollectionType {
   };
   attributes: {
     build: Attribute.Relation<
-      'plugin::file-library.file-entry',
+      'plugin::bundle-registry.file-entry',
       'manyToOne',
-      'plugin::file-library.file-build'
+      'plugin::bundle-registry.file-build'
     >;
     relativePath: Attribute.String & Attribute.Required;
     name: Attribute.String & Attribute.Required;
@@ -820,13 +820,13 @@ export interface PluginFileLibraryFileEntry extends Schema.CollectionType {
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
-      'plugin::file-library.file-entry',
+      'plugin::bundle-registry.file-entry',
       'oneToOne',
       'admin::user'
     > &
       Attribute.Private;
     updatedBy: Attribute.Relation<
-      'plugin::file-library.file-entry',
+      'plugin::bundle-registry.file-entry',
       'oneToOne',
       'admin::user'
     > &
@@ -1084,8 +1084,8 @@ declare module '@strapi/types' {
       'api::minecraft.minecraft': ApiMinecraftMinecraft;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
-      'plugin::file-library.file-build': PluginFileLibraryFileBuild;
-      'plugin::file-library.file-entry': PluginFileLibraryFileEntry;
+      'plugin::bundle-registry.file-build': PluginBundleRegistryFileBuild;
+      'plugin::bundle-registry.file-entry': PluginBundleRegistryFileEntry;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;

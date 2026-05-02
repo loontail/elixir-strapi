@@ -7,7 +7,7 @@ import i18N from "@strapi/plugin-i18n/strapi-admin";
 import usersPermissions from "@strapi/plugin-users-permissions/strapi-admin";
 import slug from "custom-slug/strapi-admin";
 import skins from "../../src/plugins/skins/strapi-admin";
-import fileLibrary from "../../src/plugins/file-library/strapi-admin";
+import bundleRegistry from "../../src/plugins/bundle-registry/strapi-admin";
 import { renderAdmin } from "@strapi/strapi/admin";
 
 renderAdmin(document.getElementById("strapi"), {
@@ -17,6 +17,6 @@ renderAdmin(document.getElementById("strapi"), {
     "users-permissions": usersPermissions,
     slug: slug,
     skins: skins,
-    "file-library": fileLibrary,
+    "bundle-registry": bundleRegistry,
   },
 });

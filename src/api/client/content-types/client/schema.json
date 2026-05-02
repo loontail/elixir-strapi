@@ -161,7 +161,7 @@
         }
       },
       "type": "customField",
-      "customField": "plugin::file-library.build-picker"
+      "customField": "plugin::bundle-registry.build-picker"
     }
   }
 }
