@@ -9,10 +9,9 @@ import {
   Typography,
   Loader,
   Flex,
-  BaseCheckbox,
 } from '@strapi/design-system';
 import { ArrowLeft, Trash } from '@strapi/icons';
-import { useIntl } from 'react-intl';
+import { useIntl, FormattedMessage } from 'react-intl';
 import pluginId from '../../pluginId';
 import { getTranslation } from '../../utils/getTranslation';
 import { formatBytes } from '../../utils/formatBytes';
@@ -56,7 +55,7 @@ const BuildDetailPage = () => {
   const history = useHistory();
   const archiveInputRef = useRef<HTMLInputElement>(null);
   const { formatMessage } = useIntl();
-  const t = (id: string, values?: Record<string, string | number>) =>
+  const translate = (id: string, values?: Record<string, string | number>) =>
     formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
 
   const {
@@ -113,6 +112,7 @@ const BuildDetailPage = () => {
     handleValidate,
     handleRemoveMissing,
     handleToggleDownloadOnce,
+    handleMove,
     handleContextAction,
   } = useFileOperations({
     slug,
@@ -147,7 +147,7 @@ const BuildDetailPage = () => {
       <Main>
         <HeaderLayout title="" />
         <ContentLayout>
-          <Loader>{t('buildDetail.loading')}</Loader>
+          <Loader>{translate('buildDetail.loading')}</Loader>
         </ContentLayout>
       </Main>
     );
@@ -160,7 +160,7 @@ const BuildDetailPage = () => {
         <ContentLayout>
           <Box background="danger100" padding={5} hasRadius>
             <Typography textColor="danger600">
-              {t('buildDetail.notFound', { slug })}
+              {translate('buildDetail.notFound', { slug })}
             </Typography>
           </Box>
         </ContentLayout>
@@ -194,7 +194,7 @@ const BuildDetailPage = () => {
             startIcon={<ArrowLeft />}
             onClick={() => history.push(`/plugins/${pluginId}`)}
           >
-            {t('buildDetail.back')}
+            {translate('buildDetail.back')}
           </Button>
         }
         primaryAction={
@@ -226,7 +226,7 @@ const BuildDetailPage = () => {
             <Flex gap={3} alignItems="flex-start" justifyContent="space-between">
               <ManifestFlexGrow>
                 <Typography variant="sigma" textColor="success700">
-                  {t('buildDetail.manifest.label')}
+                  {translate('buildDetail.manifest.label')}
                 </Typography>
                 <Box paddingTop={1} paddingBottom={2}>
                   <Typography variant="omega" textColor="neutral800" as={MonoUrl}>
@@ -234,8 +234,10 @@ const BuildDetailPage = () => {
                   </Typography>
                 </Box>
                 <Typography variant="pi" textColor="neutral600">
-                  Set as <strong>metadataUrl</strong> on the Client, or use the File Library Build
-                  custom field.
+                  <FormattedMessage
+                    id={getTranslation('buildDetail.manifest.hint')}
+                    values={{ metadataUrl: <strong>metadataUrl</strong> }}
+                  />
                 </Typography>
               </ManifestFlexGrow>
               <CopyButtonWrap>
@@ -244,7 +246,7 @@ const BuildDetailPage = () => {
                   size="S"
                   onClick={() => navigator.clipboard.writeText(manifestUrl)}
                 >
-                  {t('buildDetail.manifest.copy')}
+                  {translate('buildDetail.manifest.copy')}
                 </Button>
               </CopyButtonWrap>
             </Flex>
@@ -255,11 +257,6 @@ const BuildDetailPage = () => {
           <FilesToolbar>
             <ToolbarInner>
               <ToolbarLeft>
-                <BaseCheckbox
-                  aria-label={t('buildDetail.selectAll')}
-                  checked={someSelected ? 'indeterminate' : allSelected}
-                  onChange={toggleAll}
-                />
                 <SearchWrapper>
                   <SearchIcon>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -275,7 +272,7 @@ const BuildDetailPage = () => {
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder={t('buildDetail.search.placeholder')}
+                    placeholder={translate('buildDetail.search.placeholder')}
                     hasClear={!!search}
                   />
                   {search && (
@@ -292,11 +289,11 @@ const BuildDetailPage = () => {
                     textColor="neutral800"
                   >
                     {search.trim()
-                      ? t('buildDetail.fileCount.filtered', {
+                      ? translate('buildDetail.fileCount.filtered', {
                           filtered: filteredFiles.length,
                           total: files.length,
                         })
-                      : t('buildDetail.fileCount', { count: files.length })}
+                      : translate('buildDetail.fileCount', { count: files.length })}
                   </Typography>
                   {!search.trim() && build.totalSize ? (
                     <Typography as={ZeroMarginP} variant="pi" textColor="neutral500">
@@ -307,7 +304,7 @@ const BuildDetailPage = () => {
                 {selected.size > 0 && (
                   <SelectionPill>
                     <Typography variant="pi" fontWeight="bold" textColor="primary600">
-                      {selected.size} selected
+                      {translate('buildDetail.selected', { count: selected.size })}
                     </Typography>
                   </SelectionPill>
                 )}
@@ -316,7 +313,7 @@ const BuildDetailPage = () => {
               <ToolbarActions>
                 {(validation?.missing?.length ?? 0) > 0 && (
                   <Button variant="danger-light" size="S" onClick={handleRemoveMissing}>
-                    {t('buildDetail.action.removeMissing', { count: validation!.missing.length })}
+                    {translate('buildDetail.action.removeMissing', { count: validation!.missing.length })}
                   </Button>
                 )}
                 {selected.size > 0 && (
@@ -326,7 +323,7 @@ const BuildDetailPage = () => {
                     startIcon={<Trash />}
                     onClick={() => setModal({ type: 'bulkDelete' })}
                   >
-                    {t('buildDetail.action.deleteSelected', { count: selected.size })}
+                    {translate('buildDetail.action.deleteSelected', { count: selected.size })}
                   </Button>
                 )}
               </ToolbarActions>
@@ -337,17 +334,17 @@ const BuildDetailPage = () => {
             <EmptyStateBox>
               <Box paddingBottom={2}>
                 <Typography variant="beta" textColor="neutral400">
-                  {t('buildDetail.empty.title')}
+                  {translate('buildDetail.empty.title')}
                 </Typography>
               </Box>
               <Typography variant="omega" textColor="neutral400">
-                {t('buildDetail.empty.subtitle')}
+                {translate('buildDetail.empty.subtitle')}
               </Typography>
             </EmptyStateBox>
           ) : filteredFiles.length === 0 ? (
             <EmptyStateBox>
               <Typography variant="omega" textColor="neutral400">
-                {t('buildDetail.empty.search', { query: search })}
+                {translate('buildDetail.empty.search', { query: search })}
               </Typography>
             </EmptyStateBox>
           ) : (
@@ -357,11 +354,17 @@ const BuildDetailPage = () => {
               selected={selected}
               missingIds={missingIds}
               slug={slug}
+              buildName={build.name}
+              totalFiles={files.length}
+              allSelected={allSelected}
+              someSelected={someSelected}
+              onToggleAll={toggleAll}
               onToggleExpand={toggleExpand}
               onToggleFile={toggleFile}
               onToggleDir={toggleDir}
               onContextAction={handleContextAction}
               onToggleDownloadOnce={handleToggleDownloadOnce}
+              onMove={handleMove}
             />
           )}
         </TablePanel>

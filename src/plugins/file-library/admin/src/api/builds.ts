@@ -56,6 +56,9 @@ export const buildsApi = {
 
   validate: (slug: string): Promise<ValidateResult> =>
     request(`${BASE}/builds/${slug}/validate`, { method: 'POST' }) as Promise<ValidateResult>,
+
+  diskSpace: (): Promise<{ free: number | null; total: number | null }> =>
+    request(`${BASE}/disk-space`, { method: 'GET' }) as Promise<{ free: number | null; total: number | null }>,
 };
 
 /** Multipart upload helper (fetch instead of request() because FormData isn't supported). */

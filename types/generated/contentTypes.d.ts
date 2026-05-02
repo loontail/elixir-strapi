@@ -737,7 +737,7 @@ export interface PluginFileLibraryFileBuild extends Schema.CollectionType {
     singularName: 'file-build';
     pluralName: 'file-builds';
     displayName: 'File Build';
-    description: 'Physical Minecraft build file set';
+    description: 'File build with artifact manifest';
   };
   options: {
     draftAndPublish: false;

@@ -60,6 +60,43 @@ const buildService = ({ strapi }: { strapi: any }) => ({
       });
     }
   },
+
+  async upsertFileEntries(buildId: number, scanResults: ScanEntry[]): Promise<void> {
+    const existing: Array<{ id: number; relativePath: string }> = await strapi.db
+      .query('plugin::file-library.file-entry')
+      .findMany({ where: { build: buildId }, select: ['id', 'relativePath'] });
+    const existingMap = new Map(existing.map((e) => [e.relativePath, e.id]));
+
+    for (const entry of scanResults) {
+      const existingId = existingMap.get(entry.relativePath);
+      if (existingId !== undefined) {
+        await strapi.db.query('plugin::file-library.file-entry').update({
+          where: { id: existingId },
+          data: {
+            name: entry.name,
+            category: entry.category,
+            size: entry.size,
+            sha256: entry.sha256 ?? null,
+            fileModifiedAt: entry.fileModifiedAt ?? null,
+          },
+        });
+      } else {
+        await strapi.db.query('plugin::file-library.file-entry').create({
+          data: {
+            build: buildId,
+            relativePath: entry.relativePath,
+            name: entry.name,
+            category: entry.category,
+            size: entry.size,
+            sha256: entry.sha256 ?? null,
+            isDir: entry.isDir,
+            downloadOnce: false,
+            fileModifiedAt: entry.fileModifiedAt ?? null,
+          },
+        });
+      }
+    }
+  },
 });
 
 export default buildService;

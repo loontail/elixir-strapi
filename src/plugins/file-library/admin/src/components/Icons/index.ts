@@ -3,6 +3,8 @@ export { UploadIcon } from './UploadIcon';
 export { HashIcon } from './HashIcon';
 export { TrashIcon } from './TrashIcon';
 export { FolderIcon } from './FolderIcon';
+export { FolderOpenIcon } from './FolderOpenIcon';
 export { FileIcon } from './FileIcon';
 export { ChevronRightIcon } from './ChevronRightIcon';
 export { ChevronDownIcon } from './ChevronDownIcon';
+export { MoveIcon } from './MoveIcon';

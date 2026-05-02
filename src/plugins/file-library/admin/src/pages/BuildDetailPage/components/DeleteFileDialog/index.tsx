@@ -16,7 +16,7 @@ interface DeleteFileDialogProps {
 const DeleteFileDialog = ({ entry, slug, onClose, onSuccess }: DeleteFileDialogProps) => {
   const toggleNotification = useNotification();
   const { formatMessage } = useIntl();
-  const t = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
+  const translate = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
   const [deleting, setDeleting] = useState(false);
 
   const handleConfirm = async () => {
@@ -33,7 +33,7 @@ const DeleteFileDialog = ({ entry, slug, onClose, onSuccess }: DeleteFileDialogP
   };
 
   return (
-    <Dialog onClose={onClose} title={t('modal.deleteFile.title')} isOpen>
+    <Dialog onClose={onClose} title={translate('modal.deleteFile.title')} isOpen>
       <DialogBody>
         <Typography>
           <FormattedMessage
@@ -47,12 +47,12 @@ const DeleteFileDialog = ({ entry, slug, onClose, onSuccess }: DeleteFileDialogP
       <DialogFooter
         startAction={
           <Button variant="tertiary" onClick={onClose}>
-            {t('modal.deleteFile.cancel')}
+            {translate('modal.deleteFile.cancel')}
           </Button>
         }
         endAction={
           <Button variant="danger-light" onClick={handleConfirm} loading={deleting}>
-            {t('modal.deleteFile.confirm')}
+            {translate('modal.deleteFile.confirm')}
           </Button>
         }
       />

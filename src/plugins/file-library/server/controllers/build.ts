@@ -13,10 +13,22 @@ import {
 import {
   ensureBuildDir,
   deleteBuildFiles,
-  deleteFilesDir,
   getFilesPath,
   isPathSafe,
 } from '../services/storage';
+
+const getSystemDiskSpace = (): { free: number; total: number } | null => {
+  try {
+    // statfsSync is available since Node.js 19.6.0; returns null on older runtimes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const nativeFs = require('fs') as any;
+    if (typeof nativeFs.statfsSync !== 'function') return null;
+    const s = nativeFs.statfsSync(process.cwd()) as { bfree: number; bsize: number; blocks: number };
+    return { free: s.bfree * s.bsize, total: s.blocks * s.bsize };
+  } catch {
+    return null;
+  }
+};
 import { extractZip } from '../services/archive';
 import { scanDirectory, computeFileSha256 } from '../services/scanner';
 import { generate as generateManifest } from '../services/manifest-generator';
@@ -122,7 +134,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const { slug } = ctx.params as { slug: string };
     const buildService = strapi.plugin('file-library').service('build');
 
-    let build: Build | null = await buildService.findOne(slug);
+    const build: Build | null = await buildService.findOne(slug);
     if (!build) return ctx.notFound('Build not found');
 
     if (build.status === 'processing') {
@@ -146,9 +158,6 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
 
     try {
       const filesPath = getFilesPath(slug);
-
-      await buildService.deleteFileEntries(build.id);
-      deleteFilesDir(slug);
       ensureBuildDir(slug);
 
       const pluginConfig = strapi.plugin('file-library').config;
@@ -158,11 +167,10 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
       extractZip(file.path, filesPath, { maxSize: maxZipSize, maxEntries: maxZipEntries });
 
       const scanResults = await scanDirectory(filesPath);
-      await buildService.createFileEntries(build.id, scanResults);
+      await buildService.upsertFileEntries(build.id, scanResults);
       await generateManifest(slug, strapi);
 
-      build = await buildService.findOne(slug);
-      ctx.body = build;
+      ctx.body = await buildService.findOne(slug);
     } catch (err) {
       strapi.log.error('[file-library] uploadArchive error:', err);
       await buildService.update(build.id, {
@@ -498,6 +506,10 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     if (existsSync(filesPath)) walkOrphans(filesPath);
 
     ctx.body = { missing, orphaned };
+  },
+
+  async diskSpace(ctx: KoaContext) {
+    ctx.body = getSystemDiskSpace() ?? { free: null, total: null };
   },
 
   async regenerateManifest(ctx: KoaContext) {

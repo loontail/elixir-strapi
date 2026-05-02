@@ -2,7 +2,7 @@ import { memo, Fragment } from 'react';
 import { useTheme, BaseCheckbox, Typography, IconButton, SimpleMenu, MenuItem } from '@strapi/design-system';
 import { More } from '@strapi/icons';
 import { useIntl } from 'react-intl';
-import { PencilIcon, UploadIcon, HashIcon, TrashIcon, FolderIcon, FileIcon, ChevronRightIcon, ChevronDownIcon } from '../../../../components/Icons';
+import { PencilIcon, UploadIcon, HashIcon, TrashIcon, FolderIcon, FolderOpenIcon, FileIcon, ChevronRightIcon, ChevronDownIcon } from '../../../../components/Icons';
 import { formatBytes } from '../../../../utils/formatBytes';
 import { getTranslation } from '../../../../utils/getTranslation';
 import { getFileIds } from '../../hooks/useFileTree';
@@ -42,19 +42,26 @@ interface FileTreeRowProps {
   selected: Set<number>;
   missingIds: Set<number>;
   slug: string;
+  isDragOver: boolean;
+  draggedEntryId: number | null;
   onToggleExpand: (key: string) => void;
   onToggleFile: (id: number) => void;
   onToggleDir: (node: TreeNode) => void;
   onContextAction: (type: string, entry: FileEntry) => void;
   onToggleDownloadOnce: (entry: FileEntry) => void;
+  onDragStart: (entry: FileEntry) => void;
+  onDragEnd: () => void;
+  onDragOverDir: (key: string) => void;
+  onDragLeaveDir: () => void;
+  onDropOnDir: (node: TreeNode) => void;
 }
 
 const formatDate = (raw?: string): string => {
   if (!raw) return '—';
-  const d = new Date(raw);
-  if (isNaN(d.getTime())) return '—';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const date = new Date(raw);
+  if (isNaN(date.getTime())) return '—';
+  const pad = (num: number) => String(num).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 const FileTreeRow = memo(({
@@ -63,27 +70,31 @@ const FileTreeRow = memo(({
   selected,
   missingIds,
   slug,
+  isDragOver,
   onToggleExpand,
   onToggleFile,
   onToggleDir,
   onContextAction,
   onToggleDownloadOnce,
+  onDragStart,
+  onDragEnd,
+  onDragOverDir,
+  onDragLeaveDir,
+  onDropOnDir,
 }: FileTreeRowProps) => {
-  // useTheme is still needed for icon color props which can't be expressed as CSS
   const theme = useTheme();
-  const c = theme.colors;
+  const colors = theme.colors;
   const { formatMessage } = useIntl();
-  const t = (id: string, values?: Record<string, string | number>) =>
+  const translate = (id: string, values?: Record<string, string | number>) =>
     formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
 
-  // VS Code-style tree connector lines
-  const guideLines = depth === 0 ? null : Array.from({ length: depth }, (_, i) => {
-    const isImmediate = i === depth - 1;
-    const continues = isImmediate ? lineFlags[depth] : lineFlags[i + 1];
+  const guideLines = depth === 0 ? null : Array.from({ length: depth }, (_, depthIndex) => {
+    const isImmediate = depthIndex === depth - 1;
+    const continues = isImmediate ? lineFlags[depth] : lineFlags[depthIndex + 1];
     if (!isImmediate && !continues) return null;
-    const spineX = i * 20 + 14;
+    const spineX = depthIndex * 20 + 14;
     return (
-      <Fragment key={i}>
+      <Fragment key={depthIndex}>
         <GuideSpine $x={spineX} $continues={!!continues} />
         {isImmediate && <GuideHorizontal $x={spineX} />}
       </Fragment>
@@ -92,17 +103,47 @@ const FileTreeRow = memo(({
 
   if (node.isDir) {
     const dirIds = getFileIds(node);
-    const allSel = dirIds.length > 0 && dirIds.every((id) => selected.has(id));
-    const someSel = !allSel && dirIds.some((id) => selected.has(id));
+    const allSelected = dirIds.length > 0 && dirIds.every((id) => selected.has(id));
+    const someSelected = !allSelected && dirIds.some((id) => selected.has(id));
     const isOpen = expanded.has(node.key);
 
+    const isDraggableDir = !!node.entry;
+
     return (
-      <DirRow $selected={allSel} $partial={someSel}>
+      <DirRow
+        $selected={allSelected}
+        $partial={someSelected}
+        $dragOver={isDragOver}
+        draggable={isDraggableDir}
+        onDragStart={isDraggableDir ? (event: React.DragEvent) => {
+          event.dataTransfer.effectAllowed = 'move';
+          onDragStart(node.entry!);
+        } : undefined}
+        onDragEnd={isDraggableDir ? onDragEnd : undefined}
+        onDragOver={(event: React.DragEvent) => {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'move';
+          onDragOverDir(node.key);
+        }}
+        onDragEnter={(event: React.DragEvent) => {
+          event.preventDefault();
+          onDragOverDir(node.key);
+        }}
+        onDragLeave={(event: React.DragEvent) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+            onDragLeaveDir();
+          }
+        }}
+        onDrop={(event: React.DragEvent) => {
+          event.preventDefault();
+          onDropOnDir(node);
+        }}
+      >
         <CheckCell>
           {dirIds.length > 0 && (
             <BaseCheckbox
-              aria-label={t('buildDetail.selectDir', { name: node.name })}
-              checked={someSel ? 'indeterminate' : allSel}
+              aria-label={translate('buildDetail.selectDir', { name: node.name })}
+              checked={someSelected ? 'indeterminate' : allSelected}
               onChange={() => onToggleDir(node)}
             />
           )}
@@ -114,21 +155,25 @@ const FileTreeRow = memo(({
             onClick={() => onToggleExpand(node.key)}
             aria-expanded={isOpen}
           >
-            {isOpen ? <ChevronDownIcon color={c.neutral300} /> : <ChevronRightIcon color={c.neutral300} />}
+            {isOpen
+              ? <ChevronDownIcon color={colors.neutral300} />
+              : <ChevronRightIcon color={colors.neutral300} />}
           </ExpandButton>
-          <FolderIcon size={16} color={isOpen ? c.primary600 : c.warning600} />
+          {isOpen
+            ? <FolderOpenIcon size={16} color={colors.warning600} />
+            : <FolderIcon size={16} color={colors.warning600} />}
           <DirName>{node.name}</DirName>
           <DirCount>{dirIds.length}</DirCount>
         </NameCell>
         <EmptyCell style={undefined} /><EmptyCell style={undefined} /><EmptyCell style={undefined} /><EmptyCell style={undefined} />
         <ActCell>
           {node.entry && (
-            <SimpleMenu label={t('buildDetail.folderActions')} as={IconButton} icon={<More />}>
+            <SimpleMenu label="" aria-label={translate('buildDetail.folderActions')} as={IconButton} icon={<More />}>
               <MenuItem onClick={() => onContextAction('rename', node.entry!)}>
-                <MenuItemRow><PencilIcon />{t('buildDetail.action.rename')}</MenuItemRow>
+                <MenuItemRow><PencilIcon />{translate('buildDetail.action.rename')}</MenuItemRow>
               </MenuItem>
               <MenuItem onClick={() => onContextAction('delete', node.entry!)}>
-                <MenuItemRow><TrashIcon /><DangerLabel>{t('buildDetail.action.deleteFolder')}</DangerLabel></MenuItemRow>
+                <MenuItemRow><TrashIcon /><DangerLabel>{translate('buildDetail.action.deleteFolder')}</DangerLabel></MenuItemRow>
               </MenuItem>
             </SimpleMenu>
           )}
@@ -138,23 +183,32 @@ const FileTreeRow = memo(({
   }
 
   const entry = node.entry!;
-  const isSel = selected.has(entry.id);
+  const isSelected = selected.has(entry.id);
   const isMissing = missingIds.has(entry.id);
 
   return (
-    <FileRow $missing={isMissing} $selected={isSel}>
+    <FileRow
+      $missing={isMissing}
+      $selected={isSelected}
+      draggable
+      onDragStart={(event: React.DragEvent) => {
+        event.dataTransfer.effectAllowed = 'move';
+        onDragStart(entry);
+      }}
+      onDragEnd={onDragEnd}
+    >
       <CheckCell>
         <BaseCheckbox
-          aria-label={t('buildDetail.selectFile', { name: entry.name })}
-          checked={isSel}
+          aria-label={translate('buildDetail.selectFile', { name: entry.name })}
+          checked={isSelected}
           onChange={() => onToggleFile(entry.id)}
         />
       </CheckCell>
       <NameCell $depth={depth}>
         {guideLines}
         <ExpandSpacer />
-        <FileIcon size={14} color={c.primary500} />
-        {isMissing && <MissingBadge>{t('buildDetail.missing.badge')}</MissingBadge>}
+        <FileIcon size={14} color={colors.primary500} />
+        {isMissing && <MissingBadge>{translate('buildDetail.missing.badge')}</MissingBadge>}
         <FileNameOverflow>
           <FileNameLink
             href={`${window.location.origin}/file-library/builds/${slug}/files/${entry.relativePath}`}
@@ -171,7 +225,7 @@ const FileTreeRow = memo(({
       <HashCell>
         {entry.sha256 ? (
           <HashChip
-            title={`Click to copy: ${entry.sha256}`}
+            title={translate('buildDetail.table.hashChip.copyTitle', { hash: entry.sha256 })}
             onClick={() => navigator.clipboard.writeText(entry.sha256!)}
           >
             …{entry.sha256.slice(-12)}
@@ -183,8 +237,8 @@ const FileTreeRow = memo(({
       <DlCell>
         <ToggleButton
           type="button"
-          aria-label={t('buildDetail.downloadOnce.label', {
-            state: t(entry.downloadOnce ? 'buildDetail.downloadOnce.on' : 'buildDetail.downloadOnce.off'),
+          aria-label={translate('buildDetail.downloadOnce.label', {
+            state: translate(entry.downloadOnce ? 'buildDetail.downloadOnce.on' : 'buildDetail.downloadOnce.off'),
           })}
           onClick={() => onToggleDownloadOnce(entry)}
         >
@@ -194,18 +248,18 @@ const FileTreeRow = memo(({
         </ToggleButton>
       </DlCell>
       <ActCell>
-        <SimpleMenu label={t('buildDetail.fileActions')} as={IconButton} icon={<More />}>
+        <SimpleMenu label="" aria-label={translate('buildDetail.fileActions')} as={IconButton} icon={<More />}>
           <MenuItem onClick={() => onContextAction('rename', entry)}>
-            <MenuItemRow><PencilIcon />{t('buildDetail.action.rename')}</MenuItemRow>
+            <MenuItemRow><PencilIcon />{translate('buildDetail.action.rename')}</MenuItemRow>
           </MenuItem>
           <MenuItem onClick={() => onContextAction('replace', entry)}>
-            <MenuItemRow><UploadIcon />{t('buildDetail.action.replace')}</MenuItemRow>
+            <MenuItemRow><UploadIcon />{translate('buildDetail.action.replace')}</MenuItemRow>
           </MenuItem>
           <MenuItem onClick={() => onContextAction('rehash', entry)}>
-            <MenuItemRow><HashIcon />{t('buildDetail.action.rehash')}</MenuItemRow>
+            <MenuItemRow><HashIcon />{translate('buildDetail.action.rehash')}</MenuItemRow>
           </MenuItem>
           <MenuItem onClick={() => onContextAction('delete', entry)}>
-            <MenuItemRow><TrashIcon /><DangerLabel>{t('buildDetail.action.delete')}</DangerLabel></MenuItemRow>
+            <MenuItemRow><TrashIcon /><DangerLabel>{translate('buildDetail.action.delete')}</DangerLabel></MenuItemRow>
           </MenuItem>
         </SimpleMenu>
       </ActCell>

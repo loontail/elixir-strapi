@@ -1,10 +1,10 @@
 {
   "name": "strapi-plugin-file-library",
   "version": "0.1.0",
-  "description": "Minecraft build file library management",
+  "description": "File library management — generate JSON artifact manifests for distribution",
   "strapi": {
     "name": "file-library",
-    "description": "Manage Minecraft build file sets and generate artifacts manifests",
+    "description": "Manage file builds and generate artifact manifests for client distribution",
     "kind": "plugin",
     "displayName": "File Library"
   },

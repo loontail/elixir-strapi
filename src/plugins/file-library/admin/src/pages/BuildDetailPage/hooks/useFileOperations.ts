@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import { useNotification } from '@strapi/helper-plugin';
+import { useIntl } from 'react-intl';
 import { buildsApi, uploadArchive as uploadArchiveApi } from '../../../api/builds';
+import { getTranslation } from '../../../utils/getTranslation';
 import type { FileEntry } from '../../../../../shared/types/entities';
 import type { ValidateResult } from '../../../../../shared/types/api';
 
@@ -19,6 +21,7 @@ export type ModalState =
   | { type: 'add' }
   | { type: 'replace'; entry: FileEntry }
   | { type: 'rename'; entry: FileEntry }
+  | { type: 'move'; entry: FileEntry }
   | { type: 'delete'; entry: FileEntry }
   | { type: 'bulkDelete' };
 
@@ -29,6 +32,7 @@ interface UseFileOperationsResult {
   handleRemoveMissing: () => Promise<void>;
   handleToggleDownloadOnce: (entry: FileEntry) => Promise<void>;
   handleRehash: (entry: FileEntry) => Promise<void>;
+  handleMove: (entry: FileEntry, newPath: string) => Promise<void>;
   handleContextAction: (type: string, entry: FileEntry) => void;
 }
 
@@ -43,6 +47,12 @@ const useFileOperations = ({
   onOpenModal,
 }: UseFileOperationsOptions): UseFileOperationsResult => {
   const toggleNotification = useNotification();
+  const { formatMessage } = useIntl();
+  const translate = useCallback(
+    (id: string, values?: Record<string, string | number>) =>
+      formatMessage({ id: getTranslation(id), defaultMessage: id }, values),
+    [formatMessage],
+  );
 
   const notify = useCallback(
     (type: 'success' | 'warning', message: string) => toggleNotification({ type, message }),
@@ -54,7 +64,7 @@ const useFileOperations = ({
       setUploading(true);
       try {
         await uploadArchiveApi(slug, file);
-        notify('success', 'Archive uploaded.');
+        notify('success', translate('buildDetail.toast.archive.success'));
         load();
       } catch (err) {
         notify('warning', (err as Error).message);
@@ -62,21 +72,21 @@ const useFileOperations = ({
         setUploading(false);
       }
     },
-    [slug, load, setUploading, notify],
+    [slug, load, setUploading, notify, translate],
   );
 
   const handleRegenerate = useCallback(async () => {
     setRegenerating(true);
     try {
       await buildsApi.regenerate(slug);
-      notify('success', 'Manifest regenerated.');
+      notify('success', translate('buildDetail.toast.regenerate.success'));
       load();
     } catch (err) {
       notify('warning', (err as Error).message);
     } finally {
       setRegenerating(false);
     }
-  }, [slug, load, setRegenerating, notify]);
+  }, [slug, load, setRegenerating, notify, translate]);
 
   const handleValidate = useCallback(async () => {
     setValidating(true);
@@ -84,19 +94,13 @@ const useFileOperations = ({
       const result = await buildsApi.validate(slug);
       setValidation(result);
       if (result.missing.length === 0 && result.orphaned.length === 0) {
-        notify('success', 'All files present — no issues found.');
+        notify('success', translate('buildDetail.toast.validate.success'));
       } else {
         if (result.missing.length > 0) {
-          notify(
-            'warning',
-            `${result.missing.length} file${result.missing.length !== 1 ? 's' : ''} missing from disk — highlighted in red.`,
-          );
+          notify('warning', translate('buildDetail.toast.validate.missing', { count: result.missing.length }));
         }
         if (result.orphaned.length > 0) {
-          notify(
-            'warning',
-            `${result.orphaned.length} orphaned file${result.orphaned.length !== 1 ? 's' : ''} on disk — use Regenerate to add them.`,
-          );
+          notify('warning', translate('buildDetail.toast.validate.orphaned', { count: result.orphaned.length }));
         }
       }
     } catch (err) {
@@ -104,7 +108,7 @@ const useFileOperations = ({
     } finally {
       setValidating(false);
     }
-  }, [slug, setValidating, setValidation, notify]);
+  }, [slug, setValidating, setValidation, notify, translate]);
 
   const handleRemoveMissing = useCallback(async () => {
     if (!validation?.missing?.length) return;
@@ -113,13 +117,13 @@ const useFileOperations = ({
         slug,
         validation.missing.map((f) => f.id),
       );
-      notify('success', `Removed ${validation.missing.length} missing entry(s).`);
+      notify('success', translate('buildDetail.toast.removeMissing.success', { count: validation.missing.length }));
       setValidation(null);
       load();
     } catch (err) {
       notify('warning', (err as Error).message);
     }
-  }, [slug, validation, load, setValidation, notify]);
+  }, [slug, validation, load, setValidation, notify, translate]);
 
   const handleToggleDownloadOnce = useCallback(
     async (entry: FileEntry) => {
@@ -137,13 +141,26 @@ const useFileOperations = ({
     async (entry: FileEntry) => {
       try {
         await buildsApi.rehashFile(slug, entry.id);
-        notify('success', `Hash regenerated for ${entry.name}.`);
+        notify('success', translate('buildDetail.toast.rehash.success', { name: entry.name }));
         load();
       } catch (err) {
         notify('warning', (err as Error).message);
       }
     },
-    [slug, load, notify],
+    [slug, load, notify, translate],
+  );
+
+  const handleMove = useCallback(
+    async (entry: FileEntry, newPath: string) => {
+      try {
+        await buildsApi.renameFile(slug, entry.id, newPath);
+        notify('success', translate('modal.move.toast.success', { path: newPath }));
+        load();
+      } catch (err) {
+        notify('warning', (err as Error).message);
+      }
+    },
+    [slug, load, notify, translate],
   );
 
   const handleContextAction = useCallback(
@@ -164,6 +181,7 @@ const useFileOperations = ({
     handleRemoveMissing,
     handleToggleDownloadOnce,
     handleRehash,
+    handleMove,
     handleContextAction,
   };
 };

@@ -40,12 +40,12 @@ const BuildCreatePage = () => {
   const [form, setForm] = useState<BuildForm>({ name: '', slug: '', description: '', version: '' });
   const [submitting, setSubmitting] = useState(false);
 
-  const t = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
+  const translate = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
 
   const handleChange =
     (field: keyof BuildForm) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
-      const value = typeof e === 'string' ? e : e.target.value;
+    (eventOrValue: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
+      const value = typeof eventOrValue === 'string' ? eventOrValue : eventOrValue.target.value;
       setForm((prev) => {
         const next = { ...prev, [field]: value };
         if (field === 'name' && prev.slug === autoSlug(prev.name)) {
@@ -57,7 +57,7 @@ const BuildCreatePage = () => {
 
   const handleSubmit = async () => {
     if (!form.name.trim() || !form.slug.trim()) {
-      toggleNotification({ type: 'warning', message: t('buildCreate.validation.required') });
+      toggleNotification({ type: 'warning', message: translate('buildCreate.validation.required') });
       return;
     }
     setSubmitting(true);
@@ -74,20 +74,20 @@ const BuildCreatePage = () => {
   return (
     <Main>
       <HeaderLayout
-        title={t('buildCreate.title')}
-        subtitle={t('buildCreate.subtitle')}
+        title={translate('buildCreate.title')}
+        subtitle={translate('buildCreate.subtitle')}
         navigationAction={
           <Button
             variant="tertiary"
             startIcon={<ArrowLeft />}
             onClick={() => history.push(`/plugins/${pluginId}`)}
           >
-            {t('buildCreate.back')}
+            {translate('buildCreate.back')}
           </Button>
         }
         primaryAction={
           <Button startIcon={<Check />} loading={submitting} onClick={handleSubmit}>
-            {t('buildCreate.submit')}
+            {translate('buildCreate.submit')}
           </Button>
         }
       />
@@ -96,41 +96,41 @@ const BuildCreatePage = () => {
           <Grid gap={4}>
             <GridItem col={6}>
               <TextInput
-                label={t('buildCreate.field.name')}
+                label={translate('buildCreate.field.name')}
                 name="name"
                 value={form.name}
                 onChange={handleChange('name')}
                 required
-                placeholder={t('buildCreate.field.name.placeholder')}
+                placeholder={translate('buildCreate.field.name.placeholder')}
               />
             </GridItem>
             <GridItem col={6}>
               <TextInput
-                label={t('buildCreate.field.slug')}
+                label={translate('buildCreate.field.slug')}
                 name="slug"
                 value={form.slug}
                 onChange={handleChange('slug')}
                 required
-                placeholder={t('buildCreate.field.slug.placeholder')}
-                hint={t('buildCreate.field.slug.hint')}
+                placeholder={translate('buildCreate.field.slug.placeholder')}
+                hint={translate('buildCreate.field.slug.hint')}
               />
             </GridItem>
             <GridItem col={6}>
               <TextInput
-                label={t('buildCreate.field.version')}
+                label={translate('buildCreate.field.version')}
                 name="version"
                 value={form.version}
                 onChange={handleChange('version')}
-                placeholder={t('buildCreate.field.version.placeholder')}
+                placeholder={translate('buildCreate.field.version.placeholder')}
               />
             </GridItem>
             <GridItem col={12}>
               <Textarea
-                label={t('buildCreate.field.description')}
+                label={translate('buildCreate.field.description')}
                 name="description"
                 value={form.description}
                 onChange={handleChange('description')}
-                placeholder={t('buildCreate.field.description.placeholder')}
+                placeholder={translate('buildCreate.field.description.placeholder')}
               />
             </GridItem>
           </Grid>

@@ -24,26 +24,35 @@ interface RenameModalProps {
 const RenameModal = ({ entry, slug, onClose, onSuccess }: RenameModalProps) => {
   const toggleNotification = useNotification();
   const { formatMessage } = useIntl();
-  const t = (id: string, values?: Record<string, string | number>) =>
+  const translate = (id: string, values?: Record<string, string | number>) =>
     formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
 
-  const [newPath, setNewPath] = useState(entry.relativePath);
+  const parentDir = entry.relativePath.includes('/')
+    ? entry.relativePath.substring(0, entry.relativePath.lastIndexOf('/'))
+    : '';
+
+  const [newName, setNewName] = useState(entry.name);
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async () => {
-    const trimmed = newPath.trim();
+    const trimmed = newName.trim();
     if (!trimmed) {
-      toggleNotification({ type: 'warning', message: t('modal.rename.validation.required') });
+      toggleNotification({ type: 'warning', message: translate('modal.rename.validation.required') });
       return;
     }
-    if (trimmed === entry.relativePath) {
+    if (trimmed.includes('/')) {
+      toggleNotification({ type: 'warning', message: translate('modal.rename.validation.noSlash') });
+      return;
+    }
+    if (trimmed === entry.name) {
       onClose();
       return;
     }
+    const newPath = parentDir ? `${parentDir}/${trimmed}` : trimmed;
     setSaving(true);
     try {
-      await buildsApi.renameFile(slug, entry.id, trimmed);
-      onSuccess(t('modal.rename.toast.success'));
+      await buildsApi.renameFile(slug, entry.id, newPath);
+      onSuccess(translate('modal.rename.toast.success'));
       onClose();
     } catch (err) {
       toggleNotification({ type: 'warning', message: (err as Error).message });
@@ -56,28 +65,28 @@ const RenameModal = ({ entry, slug, onClose, onSuccess }: RenameModalProps) => {
     <ModalLayout onClose={onClose} labelledBy="rename-title">
       <ModalHeader>
         <Typography fontWeight="bold" textColor="neutral800" as="h2" id="rename-title">
-          {t(entry.isDir ? 'modal.rename.title.folder' : 'modal.rename.title.file')}
+          {translate(entry.isDir ? 'modal.rename.title.folder' : 'modal.rename.title.file')}
         </Typography>
       </ModalHeader>
       <ModalBody>
         <TextInput
-          label={t('modal.rename.field.label')}
-          name="newPath"
-          value={newPath}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPath(e.target.value)}
-          hint={t('modal.rename.field.hint', { path: entry.relativePath })}
+          label={translate('modal.rename.field.label')}
+          name="newName"
+          value={newName}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewName(e.target.value)}
+          hint={translate('modal.rename.field.hint', { name: entry.name })}
           required
         />
       </ModalBody>
       <ModalFooter
         startActions={
           <Button variant="tertiary" onClick={onClose}>
-            {t('modal.rename.cancel')}
+            {translate('modal.rename.cancel')}
           </Button>
         }
         endActions={
           <Button onClick={handleSubmit} loading={saving}>
-            {t('modal.rename.save')}
+            {translate('modal.rename.save')}
           </Button>
         }
       />

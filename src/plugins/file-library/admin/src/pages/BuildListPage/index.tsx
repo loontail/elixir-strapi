@@ -20,7 +20,7 @@ import {
 } from '@strapi/design-system';
 import { Plus, Trash } from '@strapi/icons';
 import { useNotification } from '@strapi/helper-plugin';
-import { useIntl } from 'react-intl';
+import { useIntl, FormattedMessage } from 'react-intl';
 import pluginId from '../../pluginId';
 import { buildsApi } from '../../api/builds';
 import StatusBadge from '../../components/StatusBadge';
@@ -38,7 +38,7 @@ const BuildListPage = () => {
   const toggleNotification = useNotification();
   const { formatMessage } = useIntl();
 
-  const t = (id: string, values?: Record<string, string>) =>
+  const translate = (id: string, values?: Record<string, string>) =>
     formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
 
   const load = useCallback(() => {
@@ -61,7 +61,7 @@ const BuildListPage = () => {
       await buildsApi.delete(confirmDelete);
       toggleNotification({
         type: 'success',
-        message: t('buildList.toast.deleted', { slug: confirmDelete }),
+        message: translate('buildList.toast.deleted', { slug: confirmDelete }),
       });
       setConfirmDelete(null);
       load();
@@ -75,9 +75,9 @@ const BuildListPage = () => {
   if (loading) {
     return (
       <Main>
-        <HeaderLayout title={t('buildList.title')} subtitle={t('buildList.subtitle')} />
+        <HeaderLayout title={translate('buildList.title')} subtitle={translate('buildList.subtitle')} />
         <ContentLayout>
-          <Loader>{t('buildList.loading')}</Loader>
+          <Loader>{translate('buildList.loading')}</Loader>
         </ContentLayout>
       </Main>
     );
@@ -86,11 +86,11 @@ const BuildListPage = () => {
   return (
     <Main>
       <HeaderLayout
-        title={t('buildList.title')}
-        subtitle={t('buildList.subtitle')}
+        title={translate('buildList.title')}
+        subtitle={translate('buildList.subtitle')}
         primaryAction={
           <Button startIcon={<Plus />} onClick={() => history.push(`/plugins/${pluginId}/new`)}>
-            {t('buildList.newBuild')}
+            {translate('buildList.newBuild')}
           </Button>
         }
       />
@@ -98,14 +98,14 @@ const BuildListPage = () => {
         {builds.length === 0 ? (
           <EmptyStateLayout
             icon={<span>📦</span>}
-            content={t('buildList.empty')}
+            content={translate('buildList.empty')}
             action={
               <Button
                 variant="secondary"
                 startIcon={<Plus />}
                 onClick={() => history.push(`/plugins/${pluginId}/new`)}
               >
-                {t('buildList.newBuild')}
+                {translate('buildList.newBuild')}
               </Button>
             }
           />
@@ -113,27 +113,13 @@ const BuildListPage = () => {
           <Table colCount={7} rowCount={builds.length}>
             <Thead>
               <Tr>
-                <Th>
-                  <Typography variant="sigma">{t('buildList.column.name')}</Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma">{t('buildList.column.slug')}</Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma">{t('buildList.column.version')}</Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma">{t('buildList.column.status')}</Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma">{t('buildList.column.files')}</Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma">{t('buildList.column.size')}</Typography>
-                </Th>
-                <Th>
-                  <Typography variant="sigma">{t('buildList.column.actions')}</Typography>
-                </Th>
+                <Th><Typography variant="sigma">{translate('buildList.column.name')}</Typography></Th>
+                <Th><Typography variant="sigma">{translate('buildList.column.slug')}</Typography></Th>
+                <Th><Typography variant="sigma">{translate('buildList.column.version')}</Typography></Th>
+                <Th><Typography variant="sigma">{translate('buildList.column.status')}</Typography></Th>
+                <Th><Typography variant="sigma">{translate('buildList.column.files')}</Typography></Th>
+                <Th><Typography variant="sigma">{translate('buildList.column.size')}</Typography></Th>
+                <Th><Typography variant="sigma">{translate('buildList.column.actions')}</Typography></Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -142,35 +128,23 @@ const BuildListPage = () => {
                   key={build.id}
                   onClick={() => history.push(`/plugins/${pluginId}/${build.slug}`)}
                 >
-                  <Td>
-                    <Typography fontWeight="semiBold">{build.name}</Typography>
-                  </Td>
-                  <Td>
-                    <Typography textColor="neutral600">{build.slug}</Typography>
-                  </Td>
-                  <Td>
-                    <Typography>{build.version || '—'}</Typography>
-                  </Td>
-                  <Td>
-                    <StatusBadge status={build.status} />
-                  </Td>
-                  <Td>
-                    <Typography>{build.filesCount ?? 0}</Typography>
-                  </Td>
-                  <Td>
-                    <Typography>{formatBytes(build.totalSize)}</Typography>
-                  </Td>
+                  <Td><Typography fontWeight="semiBold">{build.name}</Typography></Td>
+                  <Td><Typography textColor="neutral600">{build.slug}</Typography></Td>
+                  <Td><Typography>{build.version || '—'}</Typography></Td>
+                  <Td><StatusBadge status={build.status} /></Td>
+                  <Td><Typography>{build.filesCount ?? 0}</Typography></Td>
+                  <Td><Typography>{formatBytes(build.totalSize)}</Typography></Td>
                   <Td>
                     <Button
                       variant="danger-light"
                       size="S"
                       startIcon={<Trash />}
-                      onClick={(e: React.MouseEvent) => {
-                        e.stopPropagation();
+                      onClick={(event: React.MouseEvent) => {
+                        event.stopPropagation();
                         setConfirmDelete(build.slug);
                       }}
                     >
-                      {t('buildList.delete')}
+                      {translate('buildList.delete')}
                     </Button>
                   </Td>
                 </ClickableTr>
@@ -183,24 +157,26 @@ const BuildListPage = () => {
       {confirmDelete && (
         <Dialog
           onClose={() => setConfirmDelete(null)}
-          title={t('buildList.deleteConfirm.title')}
+          title={translate('buildList.deleteConfirm.title')}
           isOpen
         >
           <DialogBody>
             <Typography>
-              Delete build <strong>{confirmDelete}</strong>? This will remove all files and the
-              manifest.
+              <FormattedMessage
+                id={getTranslation('buildList.deleteConfirm.body')}
+                values={{ slug: <strong>{confirmDelete}</strong> }}
+              />
             </Typography>
           </DialogBody>
           <DialogFooter
             startAction={
               <Button variant="tertiary" onClick={() => setConfirmDelete(null)}>
-                {t('buildList.deleteConfirm.cancel')}
+                {translate('buildList.deleteConfirm.cancel')}
               </Button>
             }
             endAction={
               <Button variant="danger-light" onClick={handleDeleteConfirm} loading={deleting}>
-                {t('buildList.deleteConfirm.confirm')}
+                {translate('buildList.deleteConfirm.confirm')}
               </Button>
             }
           />

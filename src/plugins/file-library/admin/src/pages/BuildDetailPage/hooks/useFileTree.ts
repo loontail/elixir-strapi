@@ -19,12 +19,12 @@ const buildFileTree = (files: FileEntry[], dirEntriesMap: Map<string, FileEntry>
   const nodeMap = new Map<string, TreeNode>();
   files.forEach((file) => {
     const parts = file.relativePath.split('/');
-    for (let i = 1; i < parts.length; i++) {
-      const dirPath = parts.slice(0, i).join('/');
+    for (let partIndex = 1; partIndex < parts.length; partIndex++) {
+      const dirPath = parts.slice(0, partIndex).join('/');
       if (!nodeMap.has(dirPath)) {
         nodeMap.set(dirPath, {
           key: dirPath,
-          name: parts[i - 1],
+          name: parts[partIndex - 1],
           isDir: true,
           entry: dirEntriesMap.get(dirPath) ?? null,
           children: [],
@@ -52,14 +52,14 @@ const buildFileTree = (files: FileEntry[], dirEntriesMap: Map<string, FileEntry>
     }
   });
 
-  const sort = (nodes: TreeNode[]): void => {
+  const sortNodes = (nodes: TreeNode[]): void => {
     nodes.sort((a, b) => {
       if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
-    nodes.forEach((n) => sort(n.children));
+    nodes.forEach((node) => sortNodes(node.children));
   };
-  sort(roots);
+  sortNodes(roots);
   return roots;
 };
 
@@ -70,8 +70,8 @@ const flattenTree = (
   hasMore: boolean[] = [],
 ): FlatRow[] => {
   const rows: FlatRow[] = [];
-  nodes.forEach((node, idx) => {
-    const isLast = idx === nodes.length - 1;
+  nodes.forEach((node, index) => {
+    const isLast = index === nodes.length - 1;
     const lineFlags = [...hasMore, !isLast];
     rows.push({ node, depth, lineFlags });
     if (node.isDir && expanded.has(node.key)) {
@@ -96,7 +96,7 @@ interface UseFileTreeResult {
   someSelected: boolean;
   filteredFiles: FileEntry[];
   files: FileEntry[];
-  setSearch: (q: string) => void;
+  setSearch: (query: string) => void;
   toggleExpand: (key: string) => void;
   toggleFile: (id: number) => void;
   toggleDir: (node: TreeNode) => void;
@@ -109,19 +109,22 @@ const useFileTree = (fileEntries: FileEntry[]): UseFileTreeResult => {
   const [selected, setSelected] = useState(new Set<number>());
   const [search, setSearch] = useState('');
 
-  const files = useMemo(() => fileEntries.filter((e) => !e.isDir), [fileEntries]);
+  const files = useMemo(() => fileEntries.filter((entry) => !entry.isDir), [fileEntries]);
 
   const dirEntriesMap = useMemo(() => {
     const map = new Map<string, FileEntry>();
-    fileEntries.filter((e) => e.isDir).forEach((e) => map.set(e.relativePath, e));
+    fileEntries
+      .filter((entry) => entry.isDir)
+      .forEach((dirEntry) => map.set(dirEntry.relativePath, dirEntry));
     return map;
   }, [fileEntries]);
 
   const filteredFiles = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return files;
+    const query = search.trim().toLowerCase();
+    if (!query) return files;
     return files.filter(
-      (f) => f.relativePath.toLowerCase().includes(q) || f.name.toLowerCase().includes(q),
+      (file) =>
+        file.relativePath.toLowerCase().includes(query) || file.name.toLowerCase().includes(query),
     );
   }, [files, search]);
 
@@ -134,10 +137,10 @@ const useFileTree = (fileEntries: FileEntry[]): UseFileTreeResult => {
     if (!search.trim()) return expanded;
     const allDirs = new Set<string>();
     const collect = (nodes: TreeNode[]) => {
-      nodes.forEach((n) => {
-        if (n.isDir) {
-          allDirs.add(n.key);
-          collect(n.children);
+      nodes.forEach((node) => {
+        if (node.isDir) {
+          allDirs.add(node.key);
+          collect(node.children);
         }
       });
     };
@@ -147,23 +150,23 @@ const useFileTree = (fileEntries: FileEntry[]): UseFileTreeResult => {
 
   const rows = useMemo(() => flattenTree(tree, 0, effectiveExpanded), [tree, effectiveExpanded]);
 
-  const allFileIds = useMemo(() => files.map((f) => f.id), [files]);
+  const allFileIds = useMemo(() => files.map((file) => file.id), [files]);
   const allSelected = allFileIds.length > 0 && allFileIds.every((id) => selected.has(id));
   const someSelected = !allSelected && allFileIds.some((id) => selected.has(id));
 
   const toggleExpand = useCallback((key: string) => {
-    setExpanded((p) => {
-      const n = new Set(p);
-      n.has(key) ? n.delete(key) : n.add(key);
-      return n;
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
     });
   }, []);
 
   const toggleFile = useCallback((id: number) => {
-    setSelected((p) => {
-      const n = new Set(p);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
     });
   }, []);
 
@@ -171,10 +174,10 @@ const useFileTree = (fileEntries: FileEntry[]): UseFileTreeResult => {
     (node: TreeNode) => {
       const ids = getFileIds(node);
       const allIn = ids.every((id) => selected.has(id));
-      setSelected((p) => {
-        const n = new Set(p);
-        ids.forEach((id) => (allIn ? n.delete(id) : n.add(id)));
-        return n;
+      setSelected((prev) => {
+        const next = new Set(prev);
+        ids.forEach((id) => (allIn ? next.delete(id) : next.add(id)));
+        return next;
       });
     },
     [selected],

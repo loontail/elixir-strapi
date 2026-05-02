@@ -13,6 +13,7 @@ interface RouteConfig {
 const adminRoutes: RouteConfig = {
   type: 'admin',
   routes: [
+    { method: 'GET', path: '/disk-space', handler: 'build.diskSpace', config: { policies: [] } },
     { method: 'GET', path: '/builds', handler: 'build.find', config: { policies: [] } },
     { method: 'POST', path: '/builds', handler: 'build.create', config: { policies: [] } },
     { method: 'GET', path: '/builds/:slug', handler: 'build.findOne', config: { policies: [] } },

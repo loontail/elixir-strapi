@@ -15,7 +15,7 @@ interface BulkDeleteDialogProps {
 const BulkDeleteDialog = ({ ids, slug, onClose, onSuccess }: BulkDeleteDialogProps) => {
   const toggleNotification = useNotification();
   const { formatMessage } = useIntl();
-  const t = (id: string, values?: Record<string, string | number>) =>
+  const translate = (id: string, values?: Record<string, string | number>) =>
     formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
   const [deleting, setDeleting] = useState(false);
 
@@ -33,7 +33,7 @@ const BulkDeleteDialog = ({ ids, slug, onClose, onSuccess }: BulkDeleteDialogPro
   };
 
   return (
-    <Dialog onClose={onClose} title={t('modal.bulkDelete.title')} isOpen>
+    <Dialog onClose={onClose} title={translate('modal.bulkDelete.title')} isOpen>
       <DialogBody>
         <Typography>
           <FormattedMessage
@@ -45,12 +45,12 @@ const BulkDeleteDialog = ({ ids, slug, onClose, onSuccess }: BulkDeleteDialogPro
       <DialogFooter
         startAction={
           <Button variant="tertiary" onClick={onClose}>
-            {t('modal.bulkDelete.cancel')}
+            {translate('modal.bulkDelete.cancel')}
           </Button>
         }
         endAction={
           <Button variant="danger-light" onClick={handleConfirm} loading={deleting}>
-            {t('modal.bulkDelete.confirm', { count: ids.length })}
+            {translate('modal.bulkDelete.confirm', { count: ids.length })}
           </Button>
         }
       />

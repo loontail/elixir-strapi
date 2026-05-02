@@ -9,6 +9,8 @@ import {
   Loader,
 } from '@strapi/design-system';
 import { request } from '@strapi/helper-plugin';
+import { useIntl } from 'react-intl';
+import { getTranslation } from '../../utils/getTranslation';
 import type { Build } from '../../../../shared/types/entities';
 
 interface BuildPickerInputProps {
@@ -38,6 +40,10 @@ const BuildPickerInput = ({
 }: BuildPickerInputProps) => {
   const [builds, setBuilds] = useState<Build[]>([]);
   const [loading, setLoading] = useState(true);
+  const { formatMessage } = useIntl();
+
+  const translate = (id: string) =>
+    formatMessage({ id: getTranslation(id), defaultMessage: id });
 
   useEffect(() => {
     (request('/file-library/builds', { method: 'GET' }) as Promise<Build[]>)
@@ -53,7 +59,7 @@ const BuildPickerInput = ({
   return (
     <Field name={name} id={name} error={error} hint={description?.defaultMessage}>
       <FieldLabel action={labelAction} required={required}>
-        {intlLabel?.defaultMessage || 'File Library Build'}
+        {intlLabel?.defaultMessage || translate('build-picker.label')}
       </FieldLabel>
       {loading ? (
         <Loader small />
@@ -64,8 +70,8 @@ const BuildPickerInput = ({
           value={value || ''}
           onChange={handleChange}
           disabled={disabled}
-          placeholder="Select a build..."
-          clearLabel="Clear"
+          placeholder={translate('build-picker.placeholder')}
+          clearLabel={translate('build-picker.clear')}
           onClear={() => handleChange('')}
         >
           {builds.map((build) => (

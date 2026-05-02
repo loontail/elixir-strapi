@@ -25,7 +25,7 @@ const Toolbar = memo(
     onUploadZip,
   }: ToolbarProps) => {
     const { formatMessage } = useIntl();
-    const t = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
+    const translate = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
 
     return (
       <Flex gap={2}>
@@ -36,7 +36,7 @@ const Toolbar = memo(
           disabled={uploading || regenerating}
           onClick={onValidate}
         >
-          {t('buildDetail.toolbar.validate')}
+          {translate('buildDetail.toolbar.validate')}
         </Button>
         <Button
           variant="secondary"
@@ -45,7 +45,7 @@ const Toolbar = memo(
           disabled={uploading || validating}
           onClick={onRegenerate}
         >
-          {t('buildDetail.toolbar.regenerate')}
+          {translate('buildDetail.toolbar.regenerate')}
         </Button>
         <Button
           variant="secondary"
@@ -53,7 +53,7 @@ const Toolbar = memo(
           disabled={uploading || regenerating}
           onClick={onAddFile}
         >
-          {t('buildDetail.toolbar.addFile')}
+          {translate('buildDetail.toolbar.addFile')}
         </Button>
         <Button
           startIcon={<Upload />}
@@ -61,7 +61,7 @@ const Toolbar = memo(
           disabled={regenerating}
           onClick={onUploadZip}
         >
-          {t('buildDetail.toolbar.uploadZip')}
+          {translate('buildDetail.toolbar.uploadZip')}
         </Button>
       </Flex>
     );

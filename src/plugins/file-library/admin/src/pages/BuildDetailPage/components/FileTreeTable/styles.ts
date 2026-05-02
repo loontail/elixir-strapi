@@ -21,6 +21,7 @@ export const TableRoot = styled.div`
   width: 100%;
 `;
 
+
 export const HeaderRow = styled.div`
   display: flex;
   align-items: center;
@@ -76,6 +77,8 @@ export const HeaderDlCell = styled.div`
   min-width: 100px;
   padding-left: 12px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
 `;
 
 export const HeaderActCell = styled.div`

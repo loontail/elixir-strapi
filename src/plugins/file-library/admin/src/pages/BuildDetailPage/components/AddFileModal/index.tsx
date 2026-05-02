@@ -35,11 +35,11 @@ interface AddFileModalProps {
 
 const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalProps) => {
   const theme = useTheme();
-  const c = theme.colors;
+  const colors = theme.colors;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toggleNotification = useNotification();
   const { formatMessage } = useIntl();
-  const t = (id: string, values?: Record<string, string | number>) =>
+  const translate = (id: string, values?: Record<string, string | number>) =>
     formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
 
   const [file, setFile] = useState<File | null>(null);
@@ -63,17 +63,17 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
 
   const handleSubmit = async () => {
     if (!file) {
-      toggleNotification({ type: 'warning', message: t('modal.addFile.validation.noFile') });
+      toggleNotification({ type: 'warning', message: translate('modal.addFile.validation.noFile') });
       return;
     }
     if (!targetPath.trim()) {
-      toggleNotification({ type: 'warning', message: t('modal.addFile.validation.noPath') });
+      toggleNotification({ type: 'warning', message: translate('modal.addFile.validation.noPath') });
       return;
     }
     setUploading(true);
     try {
       await uploadFile(slug, file, targetPath.trim());
-      onSuccess(t('modal.addFile.toast.success'));
+      onSuccess(translate('modal.addFile.toast.success'));
       onClose();
     } catch (err) {
       toggleNotification({ type: 'warning', message: (err as Error).message });
@@ -86,7 +86,7 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
     <ModalLayout onClose={onClose} labelledBy="add-file-title">
       <ModalHeader>
         <Typography fontWeight="bold" textColor="neutral800" as="h2" id="add-file-title">
-          {t(isReplace ? 'modal.addFile.title.replace' : 'modal.addFile.title.add')}
+          {translate(isReplace ? 'modal.addFile.title.replace' : 'modal.addFile.title.add')}
         </Typography>
       </ModalHeader>
       <ModalBody>
@@ -110,7 +110,7 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
             {file ? (
               <div>
                 <DropZoneIconRow>
-                  <FileIcon size={32} color={c.success600} />
+                  <FileIcon size={32} color={colors.success600} />
                 </DropZoneIconRow>
                 <Typography
                   variant="omega"
@@ -124,13 +124,13 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
                   {formatBytes(file.size)}
                 </Typography>
                 <Typography variant="pi" textColor="neutral500">
-                  {t('modal.addFile.dropzone.change')}
+                  {translate('modal.addFile.dropzone.change')}
                 </Typography>
               </div>
             ) : (
               <div>
                 <DropZoneIconRow>
-                  <UploadIcon size={32} color={dragOver ? c.primary500 : c.neutral400} />
+                  <UploadIcon size={32} color={dragOver ? colors.primary500 : colors.neutral400} />
                 </DropZoneIconRow>
                 <Typography
                   variant="omega"
@@ -138,11 +138,11 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
                   textColor={dragOver ? 'primary600' : 'neutral700'}
                   as={DropZonePrompt}
                 >
-                  {t(dragOver ? 'modal.addFile.dropzone.active' : 'modal.addFile.dropzone.idle')}
+                  {translate(dragOver ? 'modal.addFile.dropzone.active' : 'modal.addFile.dropzone.idle')}
                 </Typography>
                 {isReplace && initialPath && (
                   <Typography variant="pi" textColor="neutral500" as={MonoHint}>
-                    {t('modal.addFile.replacing', { path: initialPath })}
+                    {translate('modal.addFile.replacing', { path: initialPath })}
                   </Typography>
                 )}
               </div>
@@ -150,12 +150,12 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
           </DropZone>
         </Box>
         <TextInput
-          label={t('modal.addFile.targetPath.label')}
+          label={translate('modal.addFile.targetPath.label')}
           name="targetPath"
           value={targetPath}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTargetPath(e.target.value)}
-          placeholder={t('modal.addFile.targetPath.placeholder')}
-          hint={t(
+          placeholder={translate('modal.addFile.targetPath.placeholder')}
+          hint={translate(
             isReplace
               ? 'modal.addFile.targetPath.hint.replace'
               : 'modal.addFile.targetPath.hint.add',
@@ -166,12 +166,12 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
       <ModalFooter
         startActions={
           <Button variant="tertiary" onClick={onClose}>
-            {t('modal.addFile.cancel')}
+            {translate('modal.addFile.cancel')}
           </Button>
         }
         endActions={
           <Button onClick={handleSubmit} loading={uploading} disabled={!file}>
-            {t('modal.addFile.upload')}
+            {translate('modal.addFile.upload')}
           </Button>
         }
       />

@@ -9,28 +9,36 @@ const rowBase = css`
   border-bottom: 1px solid ${({ theme }) => theme.colors.neutral150};
 `;
 
-export const DirRow = styled.div<{ $selected: boolean; $partial: boolean }>`
+export const DirRow = styled.div<{ $selected: boolean; $partial: boolean; $dragOver: boolean }>`
   ${rowBase}
-  background: ${({ theme, $selected, $partial }) =>
-    $selected
+  cursor: grab;
+  background: ${({ theme, $selected, $partial, $dragOver }) =>
+    $dragOver || $selected
       ? theme.colors.primary100
       : $partial
         ? theme.colors.primary50
         : theme.colors.neutral0};
   box-shadow: inset 3px 0 0
-    ${({ theme, $selected, $partial }) =>
-      $selected
+    ${({ theme, $selected, $partial, $dragOver }) =>
+      $dragOver || $selected
         ? theme.colors.primary600
         : $partial
           ? theme.colors.primary200
           : 'transparent'};
+  outline: ${({ theme, $dragOver }) =>
+    $dragOver ? `2px dashed ${theme.colors.primary400}` : 'none'};
+  outline-offset: -2px;
   transition:
     background 0.1s,
     box-shadow 0.1s;
+  &:active {
+    cursor: grabbing;
+  }
 `;
 
 export const FileRow = styled.div<{ $missing: boolean; $selected: boolean }>`
   ${rowBase}
+  cursor: grab;
   background: ${({ theme, $missing, $selected }) =>
     $missing
       ? theme.colors.danger100
@@ -47,6 +55,9 @@ export const FileRow = styled.div<{ $missing: boolean; $selected: boolean }>`
   transition:
     background 0.1s,
     box-shadow 0.1s;
+  &:active {
+    cursor: grabbing;
+  }
 `;
 
 // ─── Column cells ────────────────────────────────────────────────────────────
@@ -146,18 +157,20 @@ export const ExpandButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  width: 21px;
-  height: 21px;
+  padding: 4px;
+  margin: -4px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${({ theme }) => theme.colors.neutral300};
   flex-shrink: 0;
   z-index: 1;
+  border-radius: 4px;
 
-  & > svg {
-    fill: ${({ theme }) => theme.colors.neutral300};
+  &:hover {
+    background: ${({ theme }) => theme.colors.neutral100};
   }
 `;
 
@@ -206,7 +219,8 @@ export const MissingBadge = styled.span`
 
 export const FileNameOverflow = styled.div`
   min-width: 0;
-  flex: 1 1 0;
+  flex: 0 1 auto;
+  max-width: 100%;
   z-index: 1;
 `;
 
@@ -215,11 +229,13 @@ export const FileNameLink = styled.a`
   font-weight: 500;
   line-height: 1.4;
   color: ${({ theme }) => theme.colors.neutral800};
-  display: block;
+  display: inline-block;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-decoration: none;
+  vertical-align: bottom;
 
   &:hover {
     text-decoration: underline;
