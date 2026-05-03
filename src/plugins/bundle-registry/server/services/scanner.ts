@@ -1,9 +1,9 @@
-import { readdirSync, statSync, createReadStream } from 'fs';
+﻿import { readdirSync, statSync, createReadStream } from 'fs';
 import { join, relative, basename } from 'path';
 import crypto from 'crypto';
-import type { FileEntry } from '../../shared/types/entities';
+import type { Artifact } from '../../shared/types/entities';
 
-type ScanEntry = Omit<FileEntry, 'id' | 'downloadOnce' | 'build'>;
+type ScanEntry = Omit<Artifact, 'id' | 'downloadOnce' | 'build'>;
 
 interface WalkEntry {
   fullPath: string;

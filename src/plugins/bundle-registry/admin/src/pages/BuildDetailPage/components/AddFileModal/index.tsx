@@ -8,11 +8,10 @@ import {
 } from '@strapi/design-system';
 import { useTheme } from 'styled-components';
 import { useNotification } from '@strapi/strapi/admin';
-import { useIntl } from 'react-intl';
 import { UploadIcon, FileIcon } from '../../../../components/Icons';
 import { uploadFile } from '../../../../api/builds';
 import { formatBytes } from '../../../../utils/formatBytes';
-import { getTranslation } from '../../../../utils/getTranslation';
+import { useTranslate } from '../../../../hooks/useTranslate';
 import {
   DropZone,
   DropZoneIconRow,
@@ -35,9 +34,7 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
   const colors = theme.colors;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toggleNotification } = useNotification();
-  const { formatMessage } = useIntl();
-  const translate = (id: string, values?: Record<string, string | number>) =>
-    formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
+  const translate = useTranslate();
 
   const [file, setFile] = useState<File | null>(null);
   const [targetPath, setTargetPath] = useState(initialPath || '');

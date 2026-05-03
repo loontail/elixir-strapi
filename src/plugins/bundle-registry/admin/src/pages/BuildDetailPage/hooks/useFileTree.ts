@@ -1,11 +1,11 @@
-import { useState, useMemo, useCallback } from 'react';
-import type { FileEntry } from '../../../../../shared/types/entities';
+﻿import { useState, useMemo, useCallback } from 'react';
+import type { Artifact } from '../../../../../shared/types/entities';
 
 export interface TreeNode {
   key: string;
   name: string;
   isDir: boolean;
-  entry: FileEntry | null;
+  entry: Artifact | null;
   children: TreeNode[];
 }
 
@@ -15,7 +15,7 @@ export interface FlatRow {
   lineFlags: boolean[];
 }
 
-const buildFileTree = (files: FileEntry[], dirEntriesMap: Map<string, FileEntry>): TreeNode[] => {
+const buildFileTree = (files: Artifact[], dirEntriesMap: Map<string, Artifact>): TreeNode[] => {
   const nodeMap = new Map<string, TreeNode>();
   files.forEach((file) => {
     const parts = file.relativePath.split('/');
@@ -94,8 +94,8 @@ interface UseFileTreeResult {
   allFileIds: number[];
   allSelected: boolean;
   someSelected: boolean;
-  filteredFiles: FileEntry[];
-  files: FileEntry[];
+  filteredFiles: Artifact[];
+  files: Artifact[];
   setSearch: (query: string) => void;
   toggleExpand: (key: string) => void;
   toggleFile: (id: number) => void;
@@ -104,20 +104,20 @@ interface UseFileTreeResult {
   resetSelected: () => void;
 }
 
-const useFileTree = (fileEntries: FileEntry[]): UseFileTreeResult => {
+const useFileTree = (artifacts: Artifact[]): UseFileTreeResult => {
   const [expanded, setExpanded] = useState(new Set<string>());
   const [selected, setSelected] = useState(new Set<number>());
   const [search, setSearch] = useState('');
 
-  const files = useMemo(() => fileEntries.filter((entry) => !entry.isDir), [fileEntries]);
+  const files = useMemo(() => artifacts.filter((entry) => !entry.isDir), [artifacts]);
 
   const dirEntriesMap = useMemo(() => {
-    const map = new Map<string, FileEntry>();
-    fileEntries
+    const map = new Map<string, Artifact>();
+    artifacts
       .filter((entry) => entry.isDir)
       .forEach((dirEntry) => map.set(dirEntry.relativePath, dirEntry));
     return map;
-  }, [fileEntries]);
+  }, [artifacts]);
 
   const filteredFiles = useMemo(() => {
     const query = search.trim().toLowerCase();

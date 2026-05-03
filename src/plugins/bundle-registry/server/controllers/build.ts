@@ -32,7 +32,7 @@ const getSystemDiskSpace = (): { free: number; total: number } | null => {
 import { extractZip } from '../services/archive';
 import { scanDirectory, computeFileSha256 } from '../services/scanner';
 import { generate as generateManifest } from '../services/manifest-generator';
-import type { Build, FileEntry } from '../../shared/types/entities';
+import type { Build, Artifact } from '../../shared/types/entities';
 import type { StrapiInstance as Strapi, KoaContext, FormidableFile } from '../types';
 
 const pickFile = (raw: FormidableFile | FormidableFile[] | undefined): FormidableFile | undefined =>
@@ -61,11 +61,11 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const build: Build | null = await strapi.plugin('bundle-registry').service('build').findOne(slug);
     if (!build) return ctx.notFound('Build not found');
 
-    const fileEntries: FileEntry[] = await strapi.db
-      .query('plugin::bundle-registry.file-entry')
+    const artifacts: Artifact[] = await strapi.db
+      .query('plugin::bundle-registry.artifact')
       .findMany({ where: { build: { id: build.id } }, orderBy: { relativePath: 'asc' } });
 
-    ctx.body = { ...build, fileEntries };
+    ctx.body = { ...build, artifacts };
   },
 
   async create(ctx: KoaContext) {
@@ -192,8 +192,8 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const build: Build | null = await buildService.findOne(slug);
     if (!build) return ctx.notFound('Build not found');
 
-    const entry: (FileEntry & { build?: { slug: string } }) | null = await strapi.db
-      .query('plugin::bundle-registry.file-entry')
+    const entry: (Artifact & { build?: { slug: string } }) | null = await strapi.db
+      .query('plugin::bundle-registry.artifact')
       .findOne({ where: { id: Number(entryId) }, populate: ['build'] });
 
     if (!entry || entry.build?.slug !== slug) {
@@ -209,13 +209,13 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
         removeEmptyDirsUpward(path.dirname(entryPath), filesPath);
       }
       const allEntries: Array<{ id: number; relativePath: string }> = await strapi.db
-        .query('plugin::bundle-registry.file-entry')
+        .query('plugin::bundle-registry.artifact')
         .findMany({ where: { build: build.id }, select: ['id', 'relativePath'] });
       const prefix = entry.relativePath + '/';
       const childIds = allEntries.filter((e) => e.relativePath.startsWith(prefix)).map((e) => e.id);
       if (childIds.length > 0) {
         await strapi.db
-          .query('plugin::bundle-registry.file-entry')
+          .query('plugin::bundle-registry.artifact')
           .deleteMany({ where: { id: { $in: childIds } } });
       }
     } else {
@@ -225,7 +225,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
       }
     }
 
-    await strapi.db.query('plugin::bundle-registry.file-entry').delete({ where: { id: entry.id } });
+    await strapi.db.query('plugin::bundle-registry.artifact').delete({ where: { id: entry.id } });
     await generateManifest(slug, strapi);
 
     ctx.body = { message: entry.isDir ? 'Folder deleted' : 'File deleted', slug };
@@ -246,7 +246,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
 
     const normalized = path.normalize(rawTargetPath).replace(/\\/g, '/');
     if (normalized.startsWith('..') || path.isAbsolute(normalized)) {
-      return ctx.badRequest('Invalid targetPath — must be a relative path like "mods/mymod.jar"');
+      return ctx.badRequest('Invalid targetPath — must be a relative path');
     }
 
     const filesPath = getFilesPath(slug);
@@ -267,17 +267,17 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const name = parts[parts.length - 1];
     const category = parts.length > 1 ? parts[0] : 'root';
 
-    const existing: FileEntry[] = await strapi.db
-      .query('plugin::bundle-registry.file-entry')
+    const existing: Artifact[] = await strapi.db
+      .query('plugin::bundle-registry.artifact')
       .findMany({ where: { build: build.id, relativePath: normalized } });
 
     if (existing.length > 0) {
-      await strapi.db.query('plugin::bundle-registry.file-entry').update({
+      await strapi.db.query('plugin::bundle-registry.artifact').update({
         where: { id: existing[0].id },
         data: { size: stat.size, sha256, name, fileModifiedAt },
       });
     } else {
-      await strapi.db.query('plugin::bundle-registry.file-entry').create({
+      await strapi.db.query('plugin::bundle-registry.artifact').create({
         data: {
           build: build.id,
           relativePath: normalized,
@@ -303,8 +303,8 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const build: Build | null = await buildService.findOne(slug);
     if (!build) return ctx.notFound('Build not found');
 
-    const entry: (FileEntry & { build?: { slug: string } }) | null = await strapi.db
-      .query('plugin::bundle-registry.file-entry')
+    const entry: (Artifact & { build?: { slug: string } }) | null = await strapi.db
+      .query('plugin::bundle-registry.artifact')
       .findOne({ where: { id: Number(entryId) }, populate: ['build'] });
 
     if (!entry || entry.build?.slug !== slug) {
@@ -313,7 +313,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
 
     const { downloadOnce } = ctx.request.body as { downloadOnce?: boolean };
 
-    await strapi.db.query('plugin::bundle-registry.file-entry').update({
+    await strapi.db.query('plugin::bundle-registry.artifact').update({
       where: { id: entry.id },
       data: { downloadOnce: Boolean(downloadOnce) },
     });
@@ -329,8 +329,8 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const build: Build | null = await buildService.findOne(slug);
     if (!build) return ctx.notFound('Build not found');
 
-    const entry: (FileEntry & { build?: { slug: string } }) | null = await strapi.db
-      .query('plugin::bundle-registry.file-entry')
+    const entry: (Artifact & { build?: { slug: string } }) | null = await strapi.db
+      .query('plugin::bundle-registry.artifact')
       .findOne({ where: { id: Number(entryId) }, populate: ['build'] });
 
     if (!entry || entry.build?.slug !== slug) {
@@ -371,7 +371,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const name = parts[parts.length - 1];
     const category = parts.length > 1 ? parts[0] : 'root';
 
-    await strapi.db.query('plugin::bundle-registry.file-entry').update({
+    await strapi.db.query('plugin::bundle-registry.artifact').update({
       where: { id: entry.id },
       data: { relativePath: normalized, name, category },
     });
@@ -379,13 +379,13 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     if (entry.isDir) {
       const oldPrefix = entry.relativePath + '/';
       const allEntries: Array<{ id: number; relativePath: string }> = await strapi.db
-        .query('plugin::bundle-registry.file-entry')
+        .query('plugin::bundle-registry.artifact')
         .findMany({ where: { build: build.id }, select: ['id', 'relativePath'] });
       for (const child of allEntries) {
         if (!child.relativePath.startsWith(oldPrefix)) continue;
         const childNewPath = normalized + '/' + child.relativePath.slice(oldPrefix.length);
         const childParts = childNewPath.split('/');
-        await strapi.db.query('plugin::bundle-registry.file-entry').update({
+        await strapi.db.query('plugin::bundle-registry.artifact').update({
           where: { id: child.id },
           data: {
             relativePath: childNewPath,
@@ -406,8 +406,8 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const build: Build | null = await buildService.findOne(slug);
     if (!build) return ctx.notFound('Build not found');
 
-    const entry: (FileEntry & { build?: { slug: string } }) | null = await strapi.db
-      .query('plugin::bundle-registry.file-entry')
+    const entry: (Artifact & { build?: { slug: string } }) | null = await strapi.db
+      .query('plugin::bundle-registry.artifact')
       .findOne({ where: { id: Number(entryId) }, populate: ['build'] });
 
     if (!entry || entry.build?.slug !== slug || entry.isDir) {
@@ -418,7 +418,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     if (!existsSync(filePath)) return ctx.badRequest('Physical file not found on disk');
 
     const sha256 = await computeFileSha256(filePath);
-    await strapi.db.query('plugin::bundle-registry.file-entry').update({
+    await strapi.db.query('plugin::bundle-registry.artifact').update({
       where: { id: entry.id },
       data: { sha256 },
     });
@@ -439,8 +439,8 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
       return ctx.badRequest('ids must be a non-empty array');
     }
 
-    const entries: Array<FileEntry & { build?: { slug: string } }> = await strapi.db
-      .query('plugin::bundle-registry.file-entry')
+    const entries: Array<Artifact & { build?: { slug: string } }> = await strapi.db
+      .query('plugin::bundle-registry.artifact')
       .findMany({ where: { id: { $in: (ids as number[]).map(Number) } }, populate: ['build'] });
 
     const valid = entries.filter((e) => e.build?.slug === slug && !e.isDir);
@@ -456,7 +456,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
 
     if (valid.length > 0) {
       await strapi.db
-        .query('plugin::bundle-registry.file-entry')
+        .query('plugin::bundle-registry.artifact')
         .deleteMany({ where: { id: { $in: valid.map((e) => e.id) } } });
     }
 
@@ -474,7 +474,7 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     const filesPath = getFilesPath(slug);
 
     const entries: Array<{ id: number; relativePath: string; name: string; isDir: boolean }> =
-      await strapi.db.query('plugin::bundle-registry.file-entry').findMany({
+      await strapi.db.query('plugin::bundle-registry.artifact').findMany({
         where: { build: build.id },
         select: ['id', 'relativePath', 'name', 'isDir'],
       });

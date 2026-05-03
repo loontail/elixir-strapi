@@ -1,4 +1,4 @@
-import { useRef, useMemo, useCallback, useState } from 'react';
+﻿import { useRef, useMemo, useCallback, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Main,
@@ -10,9 +10,10 @@ import {
 } from '@strapi/design-system';
 import { Layouts } from '@strapi/strapi/admin';
 import { ArrowLeft, Trash } from '@strapi/icons';
-import { useIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import pluginId from '../../pluginId';
 import { getTranslation } from '../../utils/getTranslation';
+import { useTranslate } from '../../hooks/useTranslate';
 import { formatBytes } from '../../utils/formatBytes';
 import { useBuildDetail } from './hooks/useBuildDetail';
 import { useFileTree } from './hooks/useFileTree';
@@ -47,15 +48,13 @@ import {
   SearchInput,
   SearchClearButton,
 } from './styles';
-import type { FileEntry } from '../../../../shared/types/entities';
+import type { Artifact } from '../../../../shared/types/entities';
 
 const BuildDetailPage = () => {
   const { slug } = useParams() as { slug: string };
   const navigate = useNavigate();
   const archiveInputRef = useRef<HTMLInputElement>(null);
-  const { formatMessage } = useIntl();
-  const translate = (id: string, values?: Record<string, string | number>) =>
-    formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
+  const translate = useTranslate();
 
   const {
     build,
@@ -74,7 +73,7 @@ const BuildDetailPage = () => {
   const [modal, setModal] = useState<ModalState | null>(null);
   const closeModal = useCallback(() => setModal(null), []);
 
-  const fileEntries: FileEntry[] = useMemo(() => build?.fileEntries ?? [], [build]);
+  const artifacts: Artifact[] = useMemo(() => build?.artifacts ?? [], [build]);
 
   const {
     rows,
@@ -91,7 +90,7 @@ const BuildDetailPage = () => {
     toggleDir,
     toggleAll,
     resetSelected,
-  } = useFileTree(fileEntries);
+  } = useFileTree(artifacts);
 
   const handleLoad = useCallback(() => {
     resetSelected();
@@ -186,7 +185,7 @@ const BuildDetailPage = () => {
 
       <Layouts.Header
         title={build.name}
-        subtitle={`${build.slug}${build.version ? ` · v${build.version}` : ''}`}
+        subtitle={`${build.slug}${build.version ? ` Â· v${build.version}` : ''}`}
         navigationAction={
           <Box display="inline-flex">
             <Button
@@ -278,7 +277,7 @@ const BuildDetailPage = () => {
                   />
                   {search && (
                     <SearchClearButton type="button" onClick={() => setSearch('')}>
-                      ×
+                      Ã—
                     </SearchClearButton>
                   )}
                 </SearchWrapper>

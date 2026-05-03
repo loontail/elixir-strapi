@@ -1,0 +1,121 @@
+import { memo } from 'react';
+import { Box, Typography, Flex, SearchForm, Searchbar } from '@strapi/design-system';
+import { Images } from '@strapi/icons';
+import { useTranslate } from '../../hooks/useTranslate';
+import SkinCard from './SkinCard';
+import Paginator from './Paginator';
+import type { PlayerSkin } from '../../../../shared/types/entities';
+
+interface SkinsTabProps {
+  skins: PlayerSkin[];
+  total: number;
+  page: number;
+  pageCount: number;
+  loading: boolean;
+  search: string;
+  serverUrl: string;
+  missingIds?: Set<number>;
+  onSearchChange: (value: string) => void;
+  onSearchClear: () => void;
+  onSearchSubmit: () => void;
+  onPageChange: (pageNumber: number) => void;
+  onDeleted: (id: number) => void;
+  onDelete: (id: number) => Promise<void>;
+}
+
+const SkinsTab = memo(
+  function SkinsTab({
+    skins,
+    total,
+    page,
+    pageCount,
+    loading,
+    search,
+    serverUrl,
+    missingIds,
+    onSearchChange,
+    onSearchClear,
+    onSearchSubmit,
+    onPageChange,
+    onDeleted,
+    onDelete,
+  }: SkinsTabProps) {
+    const translate = useTranslate();
+
+    return (
+      <Box
+        style={{
+          padding: '28px 56px 48px',
+          minHeight: 'calc(100vh - 160px)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {(search !== '' || total > 0) && (
+          <Box paddingBottom={5} style={{ maxWidth: 440 }}>
+            <SearchForm>
+              <Searchbar
+                name="skin-search"
+                placeholder={translate('search.placeholder')}
+                value={search}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  onSearchChange(event.target.value)
+                }
+                clearLabel={translate('search.clear.skins')}
+                onClear={onSearchClear}
+                onSubmit={onSearchSubmit}
+              >
+                {translate('search.label.skins')}
+              </Searchbar>
+            </SearchForm>
+          </Box>
+        )}
+
+        {loading ? (
+          <Flex alignItems="center" justifyContent="center" style={{ flex: 1 }}>
+            <Typography textColor="neutral500">{translate('state.loading')}</Typography>
+          </Flex>
+        ) : skins.length === 0 ? (
+          <Flex
+            alignItems="center"
+            justifyContent="center"
+            direction="column"
+            gap={3}
+            style={{ flex: 1 }}
+          >
+            <Box style={{ color: 'var(--strapi-neutral-400)', lineHeight: 0 }}>
+              <Images width={48} height={48} />
+            </Box>
+            <Typography textColor="neutral400">{translate('empty.skins')}</Typography>
+          </Flex>
+        ) : (
+          <>
+            <Box
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                gap: 16,
+              }}
+            >
+              {skins.map((skin) => (
+                <Box key={skin.id}>
+                  <SkinCard
+                    entry={skin}
+                    type="skin"
+                    serverUrl={serverUrl}
+                    isMissing={missingIds?.has(skin.id)}
+                    onDeleted={onDeleted}
+                    onDelete={onDelete}
+                  />
+                </Box>
+              ))}
+            </Box>
+            <Paginator page={page} pageCount={pageCount} onPageChange={onPageChange} />
+          </>
+        )}
+      </Box>
+    );
+  },
+);
+
+export default SkinsTab;

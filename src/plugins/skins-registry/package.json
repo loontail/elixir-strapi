@@ -1,0 +1,71 @@
+{
+  "name": "skins-registry",
+  "version": "1.0.0",
+  "description": "Minecraft skins & capes registry for Strapi",
+  "strapi": {
+    "name": "skins-registry",
+    "description": "Manages Minecraft player skins and capes",
+    "kind": "plugin",
+    "displayName": "Skins Registry"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^2.2.0",
+    "@strapi/icons": "^2.2.0",
+    "skinview3d": "^3.1.1"
+  },
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "jest": "^29.7.0",
+    "prettier": "^3.8.3",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-intl": "^10.1.4",
+    "react-router-dom": "^6.0.0",
+    "styled-components": "^6.0.0",
+    "ts-jest": "^29.4.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "styled-components": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=22.x.x"
+  },
+  "license": "MIT",
+  "exports": {
+    "./strapi-admin": {
+      "source": "./admin/src/index.ts",
+      "import": "./admin/src/index.ts",
+      "require": "./admin/src/index.ts",
+      "default": "./admin/src/index.ts"
+    },
+    "./strapi-server": {
+      "source": "./server/index.ts",
+      "require": "./strapi-server.js",
+      "default": "./strapi-server.js"
+    }
+  }
+}

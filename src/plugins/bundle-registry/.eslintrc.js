@@ -65,7 +65,11 @@ module.exports = {
       },
     },
     {
-      files: ['.eslintrc.js', '*.config.js'],
+      files: ['**/__tests__/**/*.ts', '**/*.test.ts'],
+      env: { jest: true },
+    },
+    {
+      files: ['.eslintrc.js', '*.config.js', '*.config.ts', 'jest.config.js'],
       env: { node: true, commonjs: true },
       parserOptions: { sourceType: 'script' },
     },

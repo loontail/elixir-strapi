@@ -1,4 +1,4 @@
-import type { FileEntry } from './entities';
+﻿import type { Artifact } from './entities';
 
 export interface CreateBuildDto {
   name: string;
@@ -26,7 +26,7 @@ export interface BulkDeleteDto {
 }
 
 export interface ValidateResult {
-  missing: Array<Pick<FileEntry, 'id' | 'relativePath' | 'name'>>;
+  missing: Array<Pick<Artifact, 'id' | 'relativePath' | 'name'>>;
   orphaned: Array<{ relativePath: string }>;
 }
 

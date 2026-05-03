@@ -5,9 +5,8 @@ import {
   Field,
   Loader,
 } from '@strapi/design-system';
-import { useIntl } from 'react-intl';
 import { buildsApi } from '../../api/builds';
-import { getTranslation } from '../../utils/getTranslation';
+import { useTranslate } from '../../hooks/useTranslate';
 import type { Build } from '../../../../shared/types/entities';
 
 interface BuildPickerInputProps {
@@ -37,10 +36,7 @@ const BuildPickerInput = ({
 }: BuildPickerInputProps) => {
   const [builds, setBuilds] = useState<Build[]>([]);
   const [loading, setLoading] = useState(true);
-  const { formatMessage } = useIntl();
-
-  const translate = (id: string) =>
-    formatMessage({ id: getTranslation(id), defaultMessage: id });
+  const translate = useTranslate();
 
   useEffect(() => {
     buildsApi

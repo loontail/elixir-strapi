@@ -1,10 +1,7 @@
 module.exports = ({ env }) => ({
-  'skins': {
+  'skins-registry': {
     enabled: true,
-    resolve: './src/plugins/skins',
-    config: {
-      skinsPath: env('SKINS_PATH'),
-    }
+    resolve: './src/plugins/skins-registry',
   },
   'bundle-registry': {
     enabled: true,

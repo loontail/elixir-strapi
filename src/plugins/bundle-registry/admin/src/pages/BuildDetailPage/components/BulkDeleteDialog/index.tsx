@@ -5,9 +5,10 @@ import {
   Typography,
 } from '@strapi/design-system';
 import { useNotification } from '@strapi/strapi/admin';
-import { useIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import { buildsApi } from '../../../../api/builds';
 import { getTranslation } from '../../../../utils/getTranslation';
+import { useTranslate } from '../../../../hooks/useTranslate';
 
 interface BulkDeleteDialogProps {
   ids: number[];
@@ -18,9 +19,7 @@ interface BulkDeleteDialogProps {
 
 const BulkDeleteDialog = ({ ids, slug, onClose, onSuccess }: BulkDeleteDialogProps) => {
   const { toggleNotification } = useNotification();
-  const { formatMessage } = useIntl();
-  const translate = (id: string, values?: Record<string, string | number>) =>
-    formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
+  const translate = useTranslate();
   const [deleting, setDeleting] = useState(false);
 
   const handleConfirm = async () => {

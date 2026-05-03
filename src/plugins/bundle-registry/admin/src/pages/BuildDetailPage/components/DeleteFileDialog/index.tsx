@@ -1,17 +1,18 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Modal,
   Button,
   Typography,
 } from '@strapi/design-system';
 import { useNotification } from '@strapi/strapi/admin';
-import { useIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import { buildsApi } from '../../../../api/builds';
 import { getTranslation } from '../../../../utils/getTranslation';
-import type { FileEntry } from '../../../../../../shared/types/entities';
+import { useTranslate } from '../../../../hooks/useTranslate';
+import type { Artifact } from '../../../../../../shared/types/entities';
 
 interface DeleteFileDialogProps {
-  entry: FileEntry;
+  entry: Artifact;
   slug: string;
   onClose: () => void;
   onSuccess: (msg: string) => void;
@@ -19,8 +20,7 @@ interface DeleteFileDialogProps {
 
 const DeleteFileDialog = ({ entry, slug, onClose, onSuccess }: DeleteFileDialogProps) => {
   const { toggleNotification } = useNotification();
-  const { formatMessage } = useIntl();
-  const translate = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
+  const translate = useTranslate();
   const [deleting, setDeleting] = useState(false);
 
   const handleConfirm = async () => {

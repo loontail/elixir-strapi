@@ -30,10 +30,11 @@ jest.mock('../../services/manifest-generator', () => ({
   generate: jest.fn().mockResolvedValue({}),
 }));
 
-import { existsSync, statSync, unlinkSync, readdirSync, rmSync } from 'fs';
+import { existsSync, statSync, unlinkSync, readdirSync, rmSync, renameSync, rmdirSync } from 'fs';
 import buildController from '../../controllers/build';
 import { extractZip } from '../../services/archive';
 import { generate as generateManifest } from '../../services/manifest-generator';
+import { isPathSafe, getFilesPath } from '../../services/storage';
 
 const mockExtractZip = extractZip as jest.Mock;
 const mockGenerateManifest = generateManifest as jest.Mock;
@@ -98,7 +99,7 @@ const makeBuild = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const makeFileEntry = (overrides: Record<string, unknown> = {}) => ({
+const makeArtifact = (overrides: Record<string, unknown> = {}) => ({
   id: 10,
   relativePath: 'mods/file.jar',
   name: 'file.jar',
@@ -113,7 +114,7 @@ const makeFileEntry = (overrides: Record<string, unknown> = {}) => ({
 
 beforeEach(() => jest.clearAllMocks());
 
-// ── find ───────────────────────────────────────────────────────────────────
+// â”€â”€ find â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('find', () => {
   test('returns all builds', async () => {
     const { strapi, buildService } = makeStrapi();
@@ -127,17 +128,17 @@ describe('find', () => {
   });
 });
 
-// ── findOne ───────────────────────────────────────────────────────────────
+// â”€â”€ findOne â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('findOne', () => {
-  test('returns build with fileEntries when found', async () => {
+  test('returns build with artifacts when found', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findMany.mockResolvedValue([makeFileEntry()]);
+    dbQuery.findMany.mockResolvedValue([makeArtifact()]);
 
     const ctx = makeCtx();
     await buildController({ strapi } as never).findOne(ctx as never);
 
-    expect((ctx.body as Record<string, unknown>).fileEntries).toHaveLength(1);
+    expect((ctx.body as Record<string, unknown>).artifacts).toHaveLength(1);
   });
 
   test('returns 404 when build not found', async () => {
@@ -151,7 +152,7 @@ describe('findOne', () => {
   });
 });
 
-// ── create ────────────────────────────────────────────────────────────────
+// â”€â”€ create â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('create', () => {
   test('creates build and returns 201', async () => {
     const { strapi, buildService } = makeStrapi();
@@ -184,7 +185,7 @@ describe('create', () => {
   });
 });
 
-// ── update ────────────────────────────────────────────────────────────────
+// â”€â”€ update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('update', () => {
   test('updates build and returns it', async () => {
     const { strapi, buildService } = makeStrapi();
@@ -209,7 +210,7 @@ describe('update', () => {
   });
 });
 
-// ── delete ────────────────────────────────────────────────────────────────
+// â”€â”€ delete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('delete', () => {
   test('deletes entries, files and build record', async () => {
     const { strapi, buildService } = makeStrapi();
@@ -234,7 +235,7 @@ describe('delete', () => {
   });
 });
 
-// ── uploadArchive ─────────────────────────────────────────────────────────
+// â”€â”€ uploadArchive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('uploadArchive', () => {
   test('returns 404 when build not found', async () => {
     const { strapi, buildService } = makeStrapi();
@@ -269,7 +270,7 @@ describe('uploadArchive', () => {
     const ctx = makeCtx({
       request: {
         body: {},
-        files: { archive: { type: 'application/zip', name: 'build.zip', path: '/tmp/build.zip' } },
+        files: { archive: { mimetype: 'application/zip', originalFilename: 'build.zip', filepath: '/tmp/build.zip' } },
       },
     });
     await buildController({ strapi } as never).uploadArchive(ctx as never);
@@ -294,7 +295,7 @@ describe('uploadArchive', () => {
     const ctx = makeCtx({
       request: {
         body: {},
-        files: { archive: { type: 'image/png', name: 'photo.png', path: '/tmp/photo.png' } },
+        files: { archive: { mimetype: 'image/png', originalFilename: 'photo.png', filepath: '/tmp/photo.png' } },
       },
     });
     await buildController({ strapi } as never).uploadArchive(ctx as never);
@@ -311,7 +312,7 @@ describe('uploadArchive', () => {
     const ctx = makeCtx({
       request: {
         body: {},
-        files: { archive: { type: 'application/zip', name: 'build.zip', path: '/tmp/build.zip' } },
+        files: { archive: { mimetype: 'application/zip', originalFilename: 'build.zip', filepath: '/tmp/build.zip' } },
       },
     });
     await buildController({ strapi } as never).uploadArchive(ctx as never);
@@ -331,7 +332,7 @@ describe('uploadArchive', () => {
     const ctx = makeCtx({
       request: {
         body: {},
-        files: { archive: { type: 'application/zip', name: 'bad.zip', path: '/tmp/bad.zip' } },
+        files: { archive: { mimetype: 'application/zip', originalFilename: 'bad.zip', filepath: '/tmp/bad.zip' } },
       },
     });
     await buildController({ strapi } as never).uploadArchive(ctx as never);
@@ -344,7 +345,7 @@ describe('uploadArchive', () => {
   });
 });
 
-// ── uploadFile ────────────────────────────────────────────────────────────
+// â”€â”€ uploadFile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('uploadFile', () => {
   test('returns 404 when build not found', async () => {
     const { strapi, buildService } = makeStrapi();
@@ -373,7 +374,7 @@ describe('uploadFile', () => {
     const ctx = makeCtx({
       request: {
         body: { targetPath: '../../../etc/passwd' },
-        files: { file: { name: 'evil', path: '/tmp/evil' } },
+        files: { file: { originalFilename: 'evil', filepath: '/tmp/evil' } },
       },
     });
     await buildController({ strapi } as never).uploadFile(ctx as never);
@@ -392,7 +393,7 @@ describe('uploadFile', () => {
     const ctx = makeCtx({
       request: {
         body: { targetPath: 'mods/new.jar' },
-        files: { file: { name: 'new.jar', path: '/tmp/new.jar' } },
+        files: { file: { originalFilename: 'new.jar', filepath: '/tmp/new.jar' } },
       },
     });
     await buildController({ strapi } as never).uploadFile(ctx as never);
@@ -404,14 +405,14 @@ describe('uploadFile', () => {
   test('updates existing file entry when path already tracked', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findMany.mockResolvedValue([makeFileEntry({ relativePath: 'mods/file.jar' })]);
+    dbQuery.findMany.mockResolvedValue([makeArtifact({ relativePath: 'mods/file.jar' })]);
     dbQuery.update.mockResolvedValue({});
     (statSync as jest.Mock).mockReturnValue({ size: 600, mtime: new Date() });
 
     const ctx = makeCtx({
       request: {
         body: { targetPath: 'mods/file.jar' },
-        files: { file: { name: 'file.jar', path: '/tmp/file.jar' } },
+        files: { file: { originalFilename: 'file.jar', filepath: '/tmp/file.jar' } },
       },
     });
     await buildController({ strapi } as never).uploadFile(ctx as never);
@@ -421,7 +422,7 @@ describe('uploadFile', () => {
   });
 });
 
-// ── deleteFile ────────────────────────────────────────────────────────────
+// â”€â”€ deleteFile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('deleteFile', () => {
   test('returns 404 when build not found', async () => {
     const { strapi, buildService } = makeStrapi();
@@ -447,7 +448,7 @@ describe('deleteFile', () => {
   test('returns 404 when entry belongs to a different build', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry({ build: { slug: 'other-build' } }));
+    dbQuery.findOne.mockResolvedValue(makeArtifact({ build: { slug: 'other-build' } }));
 
     const ctx = makeCtx({ params: { slug: SLUG, entryId: '10' } });
     await buildController({ strapi } as never).deleteFile(ctx as never);
@@ -458,7 +459,7 @@ describe('deleteFile', () => {
   test('deletes a regular file from disk and DB', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry());
+    dbQuery.findOne.mockResolvedValue(makeArtifact());
     dbQuery.delete.mockResolvedValue({});
     (existsSync as jest.Mock).mockReturnValue(true);
     (readdirSync as jest.Mock).mockReturnValue([]);
@@ -475,7 +476,7 @@ describe('deleteFile', () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
     dbQuery.findOne.mockResolvedValue(
-      makeFileEntry({ isDir: true, relativePath: 'mods', name: 'mods' }),
+      makeArtifact({ isDir: true, relativePath: 'mods', name: 'mods' }),
     );
     dbQuery.findMany.mockResolvedValue([
       { id: 11, relativePath: 'mods/child.jar' },
@@ -494,12 +495,12 @@ describe('deleteFile', () => {
   });
 });
 
-// ── updateFile ────────────────────────────────────────────────────────────
+// â”€â”€ updateFile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('updateFile', () => {
   test('updates downloadOnce flag', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry());
+    dbQuery.findOne.mockResolvedValue(makeArtifact());
     dbQuery.update.mockResolvedValue({});
 
     const ctx = makeCtx({
@@ -529,12 +530,12 @@ describe('updateFile', () => {
   });
 });
 
-// ── renameFile ────────────────────────────────────────────────────────────
+// â”€â”€ renameFile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('renameFile', () => {
   test('returns 400 when newRelativePath is missing', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry());
+    dbQuery.findOne.mockResolvedValue(makeArtifact());
 
     const ctx = makeCtx({
       params: { slug: SLUG, entryId: '10' },
@@ -548,7 +549,7 @@ describe('renameFile', () => {
   test('returns 400 for path traversal', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry());
+    dbQuery.findOne.mockResolvedValue(makeArtifact());
 
     const ctx = makeCtx({
       params: { slug: SLUG, entryId: '10' },
@@ -562,7 +563,7 @@ describe('renameFile', () => {
   test('renames a file on disk and in DB', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry({ relativePath: 'mods/old.jar' }));
+    dbQuery.findOne.mockResolvedValue(makeArtifact({ relativePath: 'mods/old.jar' }));
     dbQuery.update.mockResolvedValue({});
     (existsSync as jest.Mock).mockReturnValue(false);
 
@@ -579,7 +580,7 @@ describe('renameFile', () => {
   test('returns 400 when destination path already exists', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry({ relativePath: 'mods/old.jar' }));
+    dbQuery.findOne.mockResolvedValue(makeArtifact({ relativePath: 'mods/old.jar' }));
     (existsSync as jest.Mock).mockReturnValue(true);
 
     const ctx = makeCtx({
@@ -592,12 +593,12 @@ describe('renameFile', () => {
   });
 });
 
-// ── rehashFile ────────────────────────────────────────────────────────────
+// â”€â”€ rehashFile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('rehashFile', () => {
   test('recomputes sha256 and updates DB', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry());
+    dbQuery.findOne.mockResolvedValue(makeArtifact());
     dbQuery.update.mockResolvedValue({});
     (existsSync as jest.Mock).mockReturnValue(true);
 
@@ -613,7 +614,7 @@ describe('rehashFile', () => {
   test('returns 404 for directory entries', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry({ isDir: true }));
+    dbQuery.findOne.mockResolvedValue(makeArtifact({ isDir: true }));
 
     const ctx = makeCtx({ params: { slug: SLUG, entryId: '10' } });
     await buildController({ strapi } as never).rehashFile(ctx as never);
@@ -624,7 +625,7 @@ describe('rehashFile', () => {
   test('returns 400 when physical file not on disk', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findOne.mockResolvedValue(makeFileEntry());
+    dbQuery.findOne.mockResolvedValue(makeArtifact());
     (existsSync as jest.Mock).mockReturnValue(false);
 
     const ctx = makeCtx({ params: { slug: SLUG, entryId: '10' } });
@@ -634,7 +635,7 @@ describe('rehashFile', () => {
   });
 });
 
-// ── bulkDeleteFiles ───────────────────────────────────────────────────────
+// â”€â”€ bulkDeleteFiles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('bulkDeleteFiles', () => {
   test('returns 400 for empty ids array', async () => {
     const { strapi, buildService } = makeStrapi();
@@ -649,7 +650,7 @@ describe('bulkDeleteFiles', () => {
   test('deletes valid files and returns count', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
-    dbQuery.findMany.mockResolvedValue([makeFileEntry(), makeFileEntry({ id: 11 })]);
+    dbQuery.findMany.mockResolvedValue([makeArtifact(), makeArtifact({ id: 11 })]);
     dbQuery.deleteMany.mockResolvedValue({});
     (existsSync as jest.Mock).mockReturnValue(false);
     (readdirSync as jest.Mock).mockReturnValue([]);
@@ -665,7 +666,7 @@ describe('bulkDeleteFiles', () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
     buildService.findOne.mockResolvedValue(makeBuild());
     dbQuery.findMany.mockResolvedValue([
-      makeFileEntry({ build: { slug: 'other-build' } }),
+      makeArtifact({ build: { slug: 'other-build' } }),
     ]);
     (existsSync as jest.Mock).mockReturnValue(false);
 
@@ -676,7 +677,7 @@ describe('bulkDeleteFiles', () => {
   });
 });
 
-// ── validate ──────────────────────────────────────────────────────────────
+// â”€â”€ validate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('validate', () => {
   test('returns missing and orphaned lists', async () => {
     const { strapi, buildService, dbQuery } = makeStrapi();
@@ -719,7 +720,7 @@ describe('validate', () => {
   });
 });
 
-// ── diskSpace ─────────────────────────────────────────────────────────────
+// â”€â”€ diskSpace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('diskSpace', () => {
   test('returns free and total or nulls', async () => {
     const { strapi } = makeStrapi();
@@ -732,7 +733,7 @@ describe('diskSpace', () => {
   });
 });
 
-// ── regenerateManifest ────────────────────────────────────────────────────
+// â”€â”€ regenerateManifest â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 describe('regenerateManifest', () => {
   test('regenerates manifest and returns build', async () => {
     const { strapi, buildService } = makeStrapi();
@@ -768,5 +769,266 @@ describe('regenerateManifest', () => {
       expect.objectContaining({ status: 'failed', processingError: 'disk full' }),
     );
     expect(ctx.internalServerError).toHaveBeenCalled();
+  });
+});
+
+// â”€â”€ pickFile array branch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+describe('uploadArchive (array file input)', () => {
+  test('uses first element when archive field is an array', async () => {
+    const { strapi, buildService } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    buildService.update.mockResolvedValue({});
+
+    const ctx = makeCtx({
+      request: {
+        body: {},
+        files: {
+          archive: [
+            { mimetype: 'application/zip', originalFilename: 'build.zip', filepath: '/tmp/build.zip' },
+          ],
+        },
+      },
+    });
+    await buildController({ strapi } as never).uploadArchive(ctx as never);
+
+    expect(mockExtractZip).toHaveBeenCalled();
+  });
+});
+
+// â”€â”€ removeEmptyDirsUpward (rmdirSync branch) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+describe('deleteFile (empty dir cleanup)', () => {
+  test('removes empty parent directories after file deletion', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findOne.mockResolvedValue(makeArtifact());
+    (getFilesPath as jest.Mock).mockReturnValueOnce('C:\\builds\\test-build\\files');
+    (existsSync as jest.Mock)
+      .mockReturnValueOnce(true)  // entryPath exists â†’ unlinkSync
+      .mockReturnValueOnce(true)  // removeEmptyDirsUpward: dirPath exists and is empty
+      .mockReturnValue(false);
+    (readdirSync as jest.Mock).mockReturnValueOnce([]);
+
+    const ctx = makeCtx({ params: { slug: SLUG, entryId: '10' } });
+    await buildController({ strapi } as never).deleteFile(ctx as never);
+
+    expect(rmdirSync).toHaveBeenCalled();
+  });
+});
+
+// â”€â”€ uploadFile isPathSafe=false â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+describe('uploadFile (isPathSafe=false)', () => {
+  test('returns 400 when targetPath escapes build directory', async () => {
+    const { strapi, buildService } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    (isPathSafe as jest.Mock).mockReturnValueOnce(false);
+
+    const ctx = makeCtx({
+      request: {
+        body: { targetPath: 'mods/file.jar' },
+        files: { file: { originalFilename: 'file.jar', filepath: '/tmp/file.jar' } },
+      },
+    });
+    await buildController({ strapi } as never).uploadFile(ctx as never);
+
+    expect(ctx.badRequest).toHaveBeenCalledWith(expect.stringContaining('escapes'));
+  });
+});
+
+// â”€â”€ renameFile additional branches â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+describe('renameFile (additional branches)', () => {
+  test('returns 404 when entry not found in this build', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findOne.mockResolvedValue(null);
+
+    const ctx = makeCtx({
+      params: { slug: SLUG, entryId: '99' },
+      request: { body: { newRelativePath: 'mods/new.jar' }, files: {} },
+    });
+    await buildController({ strapi } as never).renameFile(ctx as never);
+
+    expect(ctx.notFound).toHaveBeenCalled();
+  });
+
+  test('returns 400 when new path escapes build directory', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findOne.mockResolvedValue(makeArtifact());
+    (isPathSafe as jest.Mock).mockReturnValueOnce(false);
+
+    const ctx = makeCtx({
+      params: { slug: SLUG, entryId: '10' },
+      request: { body: { newRelativePath: 'mods/new.jar' }, files: {} },
+    });
+    await buildController({ strapi } as never).renameFile(ctx as never);
+
+    expect(ctx.badRequest).toHaveBeenCalledWith(expect.stringContaining('escapes'));
+  });
+
+  test('moves old physical file and cleans up empty dirs', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findOne.mockResolvedValue(makeArtifact({ relativePath: 'mods/old.jar' }));
+    dbQuery.update.mockResolvedValue({});
+    (getFilesPath as jest.Mock).mockReturnValueOnce('C:\\builds\\test-build\\files');
+    (existsSync as jest.Mock)
+      .mockReturnValueOnce(false)  // newPhysical — no conflict
+      .mockReturnValueOnce(true)   // oldPhysical — file exists, do the move
+      .mockReturnValueOnce(true)   // removeEmptyDirsUpward: dirPath exists
+      .mockReturnValue(false);
+    (readdirSync as jest.Mock).mockReturnValueOnce([]);
+
+    const ctx = makeCtx({
+      params: { slug: SLUG, entryId: '10' },
+      request: { body: { newRelativePath: 'mods/new.jar' }, files: {} },
+    });
+    await buildController({ strapi } as never).renameFile(ctx as never);
+
+    expect(renameSync).toHaveBeenCalled();
+    expect(rmdirSync).toHaveBeenCalled();
+  });
+
+  test('updates child entries when renaming a directory', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findOne.mockResolvedValue(
+      makeArtifact({ relativePath: 'mods', name: 'mods', isDir: true }),
+    );
+    dbQuery.findMany.mockResolvedValue([
+      { id: 11, relativePath: 'mods/child.jar' },
+      { id: 12, relativePath: 'other/file.jar' },
+    ]);
+    dbQuery.update.mockResolvedValue({});
+    (existsSync as jest.Mock).mockReturnValue(false);
+
+    const ctx = makeCtx({
+      params: { slug: SLUG, entryId: '10' },
+      request: { body: { newRelativePath: 'plugins' }, files: {} },
+    });
+    await buildController({ strapi } as never).renameFile(ctx as never);
+
+    // one update for the entry itself, one for the matching child
+    expect(dbQuery.update).toHaveBeenCalledTimes(2);
+  });
+});
+
+// â”€â”€ bulkDeleteFiles (file on disk) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+describe('bulkDeleteFiles (file exists on disk)', () => {
+  test('unlinks file from disk when it exists', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findMany.mockResolvedValue([makeArtifact()]);
+    dbQuery.deleteMany.mockResolvedValue({});
+    (existsSync as jest.Mock).mockReturnValueOnce(true);
+
+    const ctx = makeCtx({ request: { body: { ids: [10] }, files: {} } });
+    await buildController({ strapi } as never).bulkDeleteFiles(ctx as never);
+
+    expect(unlinkSync).toHaveBeenCalled();
+  });
+});
+
+// â”€â”€ validate (walkOrphans) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+describe('validate (walkOrphans)', () => {
+  test('detects orphaned files on disk not tracked in DB', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findMany.mockResolvedValue([]);
+    const mockFile = { name: 'orphan.jar', isDirectory: () => false, isFile: () => true };
+    (existsSync as jest.Mock).mockReturnValue(true);
+    (readdirSync as jest.Mock).mockReturnValueOnce([mockFile]);
+
+    const ctx = makeCtx();
+    await buildController({ strapi } as never).validate(ctx as never);
+
+    expect((ctx.body as Record<string, unknown[]>).orphaned).toHaveLength(1);
+  });
+
+  test('recurses into subdirectories when walking orphans', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findMany.mockResolvedValue([]);
+    const mockSubDir = { name: 'subdir', isDirectory: () => true, isFile: () => false };
+    const mockFile = { name: 'deep.jar', isDirectory: () => false, isFile: () => true };
+    (existsSync as jest.Mock).mockReturnValue(true);
+    (readdirSync as jest.Mock)
+      .mockReturnValueOnce([mockSubDir])
+      .mockReturnValueOnce([mockFile]);
+
+    const ctx = makeCtx();
+    await buildController({ strapi } as never).validate(ctx as never);
+
+    expect((ctx.body as Record<string, unknown[]>).orphaned).toHaveLength(1);
+  });
+
+  test('does not mark tracked files as orphaned', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findMany.mockResolvedValue([
+      { id: 10, relativePath: 'file.jar', name: 'file.jar', isDir: false },
+    ]);
+    const mockFile = { name: 'file.jar', isDirectory: () => false, isFile: () => true };
+    (existsSync as jest.Mock)
+      .mockReturnValueOnce(true)  // entry's physical path check (not missing)
+      .mockReturnValueOnce(true); // filesPath exists â†’ run walkOrphans
+    (readdirSync as jest.Mock).mockReturnValueOnce([mockFile]);
+
+    const ctx = makeCtx();
+    await buildController({ strapi } as never).validate(ctx as never);
+
+    expect((ctx.body as Record<string, unknown[]>).orphaned).toHaveLength(0);
+    expect((ctx.body as Record<string, unknown[]>).missing).toHaveLength(0);
+  });
+
+  test('handles readdirSync error in walkOrphans gracefully', async () => {
+    const { strapi, buildService, dbQuery } = makeStrapi();
+    buildService.findOne.mockResolvedValue(makeBuild());
+    dbQuery.findMany.mockResolvedValue([]);
+    (existsSync as jest.Mock).mockReturnValue(true);
+    (readdirSync as jest.Mock).mockImplementationOnce(() => {
+      throw new Error('ENOENT');
+    });
+
+    const ctx = makeCtx();
+    await buildController({ strapi } as never).validate(ctx as never);
+
+    expect((ctx.body as Record<string, unknown[]>).orphaned).toHaveLength(0);
+  });
+});
+
+// â”€â”€ diskSpace (getSystemDiskSpace with statfsSync) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+describe('diskSpace (getSystemDiskSpace)', () => {
+  test('returns computed sizes when statfsSync is available', async () => {
+    const fsMock = jest.requireMock('fs') as Record<string, unknown>;
+    fsMock.statfsSync = jest.fn().mockReturnValue({ bfree: 1000, bsize: 4096, blocks: 5000 });
+
+    try {
+      const { strapi } = makeStrapi();
+      const ctx = makeCtx();
+      await buildController({ strapi } as never).diskSpace(ctx as never);
+
+      const body = ctx.body as Record<string, number>;
+      expect(body.free).toBe(1000 * 4096);
+      expect(body.total).toBe(5000 * 4096);
+    } finally {
+      delete fsMock.statfsSync;
+    }
+  });
+
+  test('returns null values when statfsSync throws', async () => {
+    const fsMock = jest.requireMock('fs') as Record<string, unknown>;
+    fsMock.statfsSync = jest.fn().mockImplementation(() => {
+      throw new Error('Permission denied');
+    });
+
+    try {
+      const { strapi } = makeStrapi();
+      const ctx = makeCtx();
+      await buildController({ strapi } as never).diskSpace(ctx as never);
+
+      expect(ctx.body).toEqual({ free: null, total: null });
+    } finally {
+      delete fsMock.statfsSync;
+    }
   });
 });

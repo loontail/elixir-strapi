@@ -1,7 +1,6 @@
 import { Typography } from '@strapi/design-system';
-import { useIntl } from 'react-intl';
 import type { BuildStatus } from '../../../../shared/types/entities';
-import { getTranslation } from '../../utils/getTranslation';
+import { useTranslate } from '../../hooks/useTranslate';
 import { BadgePill } from './styles';
 
 interface StatusConfig {
@@ -23,9 +22,7 @@ interface StatusBadgeProps {
 }
 
 const StatusBadge = ({ status }: StatusBadgeProps) => {
-  const { formatMessage } = useIntl();
-  const translate = (id: string) =>
-    formatMessage({ id: getTranslation(id), defaultMessage: id });
+  const translate = useTranslate();
 
   const statusConfig = STATUS[status as BuildStatus] ?? DEFAULT_STATUS;
   const statusKey = STATUS[status as BuildStatus] ? `status.${status}` : 'status.unknown';

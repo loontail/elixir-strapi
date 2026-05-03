@@ -1,9 +1,8 @@
-import { useCallback } from 'react';
+﻿import { useCallback } from 'react';
 import { useNotification } from '@strapi/strapi/admin';
-import { useIntl } from 'react-intl';
 import { buildsApi, uploadArchive as uploadArchiveApi } from '../../../api/builds';
-import { getTranslation } from '../../../utils/getTranslation';
-import type { FileEntry } from '../../../../../shared/types/entities';
+import { useTranslate } from '../../../hooks/useTranslate';
+import type { Artifact } from '../../../../../shared/types/entities';
 import type { ValidateResult } from '../../../../../shared/types/api';
 
 interface UseFileOperationsOptions {
@@ -19,10 +18,10 @@ interface UseFileOperationsOptions {
 
 export type ModalState =
   | { type: 'add' }
-  | { type: 'replace'; entry: FileEntry }
-  | { type: 'rename'; entry: FileEntry }
-  | { type: 'move'; entry: FileEntry }
-  | { type: 'delete'; entry: FileEntry }
+  | { type: 'replace'; entry: Artifact }
+  | { type: 'rename'; entry: Artifact }
+  | { type: 'move'; entry: Artifact }
+  | { type: 'delete'; entry: Artifact }
   | { type: 'bulkDelete' };
 
 interface UseFileOperationsResult {
@@ -30,10 +29,10 @@ interface UseFileOperationsResult {
   handleRegenerate: () => Promise<void>;
   handleValidate: () => Promise<void>;
   handleRemoveMissing: () => Promise<void>;
-  handleToggleDownloadOnce: (entry: FileEntry) => Promise<void>;
-  handleRehash: (entry: FileEntry) => Promise<void>;
-  handleMove: (entry: FileEntry, newPath: string) => Promise<void>;
-  handleContextAction: (type: string, entry: FileEntry) => void;
+  handleToggleDownloadOnce: (entry: Artifact) => Promise<void>;
+  handleRehash: (entry: Artifact) => Promise<void>;
+  handleMove: (entry: Artifact, newPath: string) => Promise<void>;
+  handleContextAction: (type: string, entry: Artifact) => void;
 }
 
 const useFileOperations = ({
@@ -47,12 +46,7 @@ const useFileOperations = ({
   onOpenModal,
 }: UseFileOperationsOptions): UseFileOperationsResult => {
   const { toggleNotification } = useNotification();
-  const { formatMessage } = useIntl();
-  const translate = useCallback(
-    (id: string, values?: Record<string, string | number>) =>
-      formatMessage({ id: getTranslation(id), defaultMessage: id }, values),
-    [formatMessage],
-  );
+  const translate = useTranslate();
 
   const notify = useCallback(
     (type: 'success' | 'warning', message: string) => toggleNotification({ type, message }),
@@ -125,8 +119,9 @@ const useFileOperations = ({
     }
   }, [slug, validation, load, setValidation, notify, translate]);
 
+
   const handleToggleDownloadOnce = useCallback(
-    async (entry: FileEntry) => {
+    async (entry: Artifact) => {
       try {
         await buildsApi.updateFile(slug, entry.id, { downloadOnce: !entry.downloadOnce });
         load();
@@ -138,7 +133,7 @@ const useFileOperations = ({
   );
 
   const handleRehash = useCallback(
-    async (entry: FileEntry) => {
+    async (entry: Artifact) => {
       try {
         await buildsApi.rehashFile(slug, entry.id);
         notify('success', translate('buildDetail.toast.rehash.success', { name: entry.name }));
@@ -151,7 +146,7 @@ const useFileOperations = ({
   );
 
   const handleMove = useCallback(
-    async (entry: FileEntry, newPath: string) => {
+    async (entry: Artifact, newPath: string) => {
       try {
         await buildsApi.renameFile(slug, entry.id, newPath);
         notify('success', translate('modal.move.toast.success', { path: newPath }));
@@ -164,7 +159,7 @@ const useFileOperations = ({
   );
 
   const handleContextAction = useCallback(
-    (type: string, entry: FileEntry) => {
+    (type: string, entry: Artifact) => {
       if (type === 'rehash') {
         handleRehash(entry);
         return;

@@ -1,4 +1,4 @@
-export type { Build, BuildStatus, FileEntry } from './entities';
+﻿export type { Build, BuildStatus, Artifact } from './entities';
 export type {
   CreateBuildDto,
   UpdateBuildDto,

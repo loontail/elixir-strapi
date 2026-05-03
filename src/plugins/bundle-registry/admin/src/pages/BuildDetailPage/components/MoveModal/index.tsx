@@ -1,20 +1,19 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import {
   Modal,
   Button,
   Typography,
 } from '@strapi/design-system';
 import { useNotification } from '@strapi/strapi/admin';
-import { useIntl } from 'react-intl';
 import { buildsApi } from '../../../../api/builds';
-import { getTranslation } from '../../../../utils/getTranslation';
+import { useTranslate } from '../../../../hooks/useTranslate';
 import { FolderIcon } from '../../../../components/Icons';
 import { DirList, DirItem, MovingLabel } from './styles';
-import type { FileEntry } from '../../../../../../shared/types/entities';
+import type { Artifact } from '../../../../../../shared/types/entities';
 
 interface MoveModalProps {
-  entry: FileEntry;
-  dirs: FileEntry[];
+  entry: Artifact;
+  dirs: Artifact[];
   slug: string;
   onClose: () => void;
   onSuccess: (msg: string) => void;
@@ -22,9 +21,7 @@ interface MoveModalProps {
 
 const MoveModal = ({ entry, dirs, slug, onClose, onSuccess }: MoveModalProps) => {
   const { toggleNotification } = useNotification();
-  const { formatMessage } = useIntl();
-  const translate = (id: string, values?: Record<string, string | number>) =>
-    formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
+  const translate = useTranslate();
 
   const currentParent = entry.relativePath.includes('/')
     ? entry.relativePath.substring(0, entry.relativePath.lastIndexOf('/'))
@@ -39,7 +36,7 @@ const MoveModal = ({ entry, dirs, slug, onClose, onSuccess }: MoveModalProps) =>
         if (entry.isDir) return !d.relativePath.startsWith(entry.relativePath);
         return true;
       })
-      .sort((a: FileEntry, b: FileEntry) => a.relativePath.localeCompare(b.relativePath));
+      .sort((a: Artifact, b: Artifact) => a.relativePath.localeCompare(b.relativePath));
   }, [dirs, entry]);
 
   const handleConfirm = async () => {
@@ -87,7 +84,7 @@ const MoveModal = ({ entry, dirs, slug, onClose, onSuccess }: MoveModalProps) =>
                 {translate('modal.move.empty')}
               </Typography>
             ) : (
-              availableDirs.map((dir: FileEntry) => (
+              availableDirs.map((dir: Artifact) => (
                 <DirItem
                   key={dir.relativePath}
                   type="button"

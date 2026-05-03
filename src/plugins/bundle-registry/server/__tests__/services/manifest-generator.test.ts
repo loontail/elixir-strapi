@@ -1,8 +1,13 @@
+﻿jest.mock('fs', () => ({
+  existsSync: jest.fn().mockReturnValue(true),
+}));
+
 jest.mock('../../services/storage', () => ({
   getPublicUrl: jest.fn(
     (_slug: string, relPath: string) => `http://cdn.example.com/files/${relPath}`,
   ),
   writeManifestAtomic: jest.fn(),
+  getFilesPath: jest.fn((slug: string) => `/builds/${slug}/files`),
 }));
 
 import { generate } from '../../services/manifest-generator';
@@ -28,8 +33,8 @@ const makeStrapi = (entries: Entry[], buildId = 1) => {
   const buildUpdate = jest.fn().mockResolvedValue({});
 
   const queryMock = jest.fn().mockImplementation((model: string) => {
-    if (model.includes('file-entry')) return { findMany: entryFindMany };
-    if (model.includes('file-build'))
+    if (model.includes('artifact')) return { findMany: entryFindMany };
+    if (model.includes('build'))
       return { findMany: buildFindMany, update: buildUpdate };
     return { findMany: jest.fn().mockResolvedValue([]) };
   });
@@ -245,8 +250,8 @@ describe('generate', () => {
     const buildFindMany = jest.fn().mockResolvedValue([]);
     const buildUpdate = jest.fn();
     const queryMock = jest.fn().mockImplementation((model: string) => {
-      if (model.includes('file-entry')) return { findMany: entryFindMany };
-      if (model.includes('file-build'))
+      if (model.includes('artifact')) return { findMany: entryFindMany };
+      if (model.includes('build'))
         return { findMany: buildFindMany, update: buildUpdate };
       return { findMany: jest.fn().mockResolvedValue([]) };
     });

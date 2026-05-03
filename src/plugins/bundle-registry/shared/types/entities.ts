@@ -1,4 +1,4 @@
-export type BuildStatus = 'draft' | 'processing' | 'ready' | 'failed';
+﻿export type BuildStatus = 'draft' | 'processing' | 'ready' | 'failed';
 
 export interface Build {
   id: number;
@@ -11,10 +11,10 @@ export interface Build {
   totalSize: number;
   processingError?: string;
   lastGeneratedAt?: string;
-  fileEntries?: FileEntry[];
+  artifacts?: Artifact[];
 }
 
-export interface FileEntry {
+export interface Artifact {
   id: number;
   relativePath: string;
   name: string;

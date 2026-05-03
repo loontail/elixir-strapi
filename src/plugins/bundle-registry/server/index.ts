@@ -8,8 +8,8 @@ import middlewares from './middlewares';
 import services from './services';
 
 const contentTypes = {
-  'file-build': { schema: require('./content-types/file-build/schema.json') },
-  'file-entry': { schema: require('./content-types/file-entry/schema.json') },
+  build: { schema: require('./content-types/build/schema.json') },
+  artifact: { schema: require('./content-types/artifact/schema.json') },
 };
 
 export default {

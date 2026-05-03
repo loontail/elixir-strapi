@@ -1,12 +1,12 @@
-import type { Build, FileEntry } from '../../shared/types/entities';
+﻿import type { Build, Artifact } from '../../shared/types/entities';
 
-type ScanEntry = Omit<FileEntry, 'id' | 'downloadOnce' | 'build'>;
+type ScanEntry = Omit<Artifact, 'id' | 'downloadOnce' | 'build'>;
 
 import type { StrapiInstance } from '../types';
 
 const buildService = ({ strapi }: { strapi: StrapiInstance }) => ({
   async findMany(params: Record<string, unknown> = {}): Promise<Build[]> {
-    return strapi.db.query('plugin::bundle-registry.file-build').findMany({
+    return strapi.db.query('plugin::bundle-registry.build').findMany({
       orderBy: { createdAt: 'desc' },
       ...params,
     });
@@ -14,38 +14,38 @@ const buildService = ({ strapi }: { strapi: StrapiInstance }) => ({
 
   async findOne(slug: string): Promise<Build | null> {
     const results: Build[] = await strapi.db
-      .query('plugin::bundle-registry.file-build')
+      .query('plugin::bundle-registry.build')
       .findMany({ where: { slug }, limit: 1 });
     return results[0] ?? null;
   },
 
   async create(data: Partial<Build>): Promise<Build> {
-    return strapi.db.query('plugin::bundle-registry.file-build').create({ data });
+    return strapi.db.query('plugin::bundle-registry.build').create({ data });
   },
 
   async update(id: number, data: Partial<Build>): Promise<Build> {
-    return strapi.db.query('plugin::bundle-registry.file-build').update({ where: { id }, data });
+    return strapi.db.query('plugin::bundle-registry.build').update({ where: { id }, data });
   },
 
   async delete(id: number): Promise<void> {
-    return strapi.db.query('plugin::bundle-registry.file-build').delete({ where: { id } });
+    return strapi.db.query('plugin::bundle-registry.build').delete({ where: { id } });
   },
 
   async deleteFileEntries(buildId: number): Promise<void> {
     // deleteMany with a relation filter generates a broken JOIN in the DELETE query.
     // Fetch IDs first, then delete by PK to avoid the "missing FROM-clause for t0" error.
     const entries: Array<{ id: number }> = await strapi.db
-      .query('plugin::bundle-registry.file-entry')
+      .query('plugin::bundle-registry.artifact')
       .findMany({ select: ['id'], where: { build: buildId } });
     if (entries.length === 0) return;
-    await strapi.db.query('plugin::bundle-registry.file-entry').deleteMany({
+    await strapi.db.query('plugin::bundle-registry.artifact').deleteMany({
       where: { id: { $in: entries.map((e) => e.id) } },
     });
   },
 
   async createFileEntries(buildId: number, scanResults: ScanEntry[]): Promise<void> {
     for (const entry of scanResults) {
-      await strapi.db.query('plugin::bundle-registry.file-entry').create({
+      await strapi.db.query('plugin::bundle-registry.artifact').create({
         data: {
           build: buildId,
           relativePath: entry.relativePath,
@@ -63,14 +63,14 @@ const buildService = ({ strapi }: { strapi: StrapiInstance }) => ({
 
   async upsertFileEntries(buildId: number, scanResults: ScanEntry[]): Promise<void> {
     const existing: Array<{ id: number; relativePath: string }> = await strapi.db
-      .query('plugin::bundle-registry.file-entry')
+      .query('plugin::bundle-registry.artifact')
       .findMany({ where: { build: buildId }, select: ['id', 'relativePath'] });
     const existingMap = new Map(existing.map((e) => [e.relativePath, e.id]));
 
     for (const entry of scanResults) {
       const existingId = existingMap.get(entry.relativePath);
       if (existingId !== undefined) {
-        await strapi.db.query('plugin::bundle-registry.file-entry').update({
+        await strapi.db.query('plugin::bundle-registry.artifact').update({
           where: { id: existingId },
           data: {
             name: entry.name,
@@ -81,7 +81,7 @@ const buildService = ({ strapi }: { strapi: StrapiInstance }) => ({
           },
         });
       } else {
-        await strapi.db.query('plugin::bundle-registry.file-entry').create({
+        await strapi.db.query('plugin::bundle-registry.artifact').create({
           data: {
             build: buildId,
             relativePath: entry.relativePath,

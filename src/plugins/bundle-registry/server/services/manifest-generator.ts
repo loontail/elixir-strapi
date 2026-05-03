@@ -1,10 +1,13 @@
+﻿import { join } from 'path';
+import { existsSync } from 'fs';
+
 import type { Manifest, ManifestEntry } from '../../shared/types/api';
-import { getPublicUrl, writeManifestAtomic } from './storage';
+import { getPublicUrl, writeManifestAtomic, getFilesPath } from './storage';
 
 import type { StrapiInstance } from '../types';
 
 const generate = async (buildSlug: string, strapi: StrapiInstance): Promise<Manifest> => {
-  const fileEntries: Array<{
+  const artifacts: Array<{
     relativePath: string;
     name: string;
     category: string;
@@ -13,16 +16,14 @@ const generate = async (buildSlug: string, strapi: StrapiInstance): Promise<Mani
     sha256?: string;
     downloadOnce: boolean;
     build?: { slug: string };
-  }> = await strapi.db.query('plugin::bundle-registry.file-entry').findMany({
+  }> = await strapi.db.query('plugin::bundle-registry.artifact').findMany({
     where: { build: { slug: buildSlug } },
     populate: ['build'],
   });
 
   const grouped: Manifest = {};
-  let filesCount = 0;
-  let totalSize = BigInt(0);
 
-  for (const entry of fileEntries) {
+  for (const entry of artifacts) {
     const category = entry.category || 'root';
     if (!grouped[category]) grouped[category] = [];
 
@@ -36,8 +37,6 @@ const generate = async (buildSlug: string, strapi: StrapiInstance): Promise<Mani
     if (!entry.isDir) {
       fileData.sha256 = entry.sha256;
       fileData.url = getPublicUrl(buildSlug, entry.relativePath, strapi);
-      filesCount++;
-      totalSize += BigInt(entry.size || 0);
     }
 
     if (entry.downloadOnce) {
@@ -47,14 +46,32 @@ const generate = async (buildSlug: string, strapi: StrapiInstance): Promise<Mani
     grouped[category].push(fileData);
   }
 
-  writeManifestAtomic(buildSlug, grouped);
+  const filesPath = getFilesPath(buildSlug);
+  const filteredGrouped: Manifest = {};
+  let filesCount = 0;
+  let totalSize = BigInt(0);
+
+  for (const [category, entries] of Object.entries(grouped)) {
+    const validEntries = entries.filter(entry => existsSync(join(filesPath, entry.path)));
+    if (validEntries.length > 0) {
+      filteredGrouped[category] = validEntries;
+      for (const entry of validEntries) {
+        if (!entry.isDir) {
+          filesCount++;
+          totalSize += BigInt(entry.size || 0);
+        }
+      }
+    }
+  }
+
+  writeManifestAtomic(buildSlug, filteredGrouped);
 
   const builds: Array<{ id: number }> = await strapi.db
-    .query('plugin::bundle-registry.file-build')
+    .query('plugin::bundle-registry.build')
     .findMany({ where: { slug: buildSlug }, limit: 1 });
 
   if (builds.length > 0) {
-    await strapi.db.query('plugin::bundle-registry.file-build').update({
+    await strapi.db.query('plugin::bundle-registry.build').update({
       where: { id: builds[0].id },
       data: {
         status: 'ready',
@@ -66,7 +83,7 @@ const generate = async (buildSlug: string, strapi: StrapiInstance): Promise<Mani
     });
   }
 
-  return grouped;
+  return filteredGrouped;
 };
 
 export { generate };

@@ -168,6 +168,28 @@ describe('buildService.createFileEntries', () => {
     await service.createFileEntries(1, []);
     expect(query.create).not.toHaveBeenCalled();
   });
+
+  test('stores null sha256 when entry sha256 is undefined', async () => {
+    const { strapi, query } = makeStrapi();
+    query.create.mockResolvedValue({});
+
+    const service = buildService({ strapi } as never);
+    await service.createFileEntries(1, [
+      {
+        relativePath: 'mods/a.jar',
+        name: 'a.jar',
+        category: 'mods',
+        size: 100,
+        sha256: undefined,
+        isDir: false,
+        fileModifiedAt: undefined,
+      },
+    ]);
+
+    expect(query.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ sha256: null }) }),
+    );
+  });
 });
 
 describe('buildService.upsertFileEntries', () => {
@@ -226,5 +248,51 @@ describe('buildService.upsertFileEntries', () => {
 
     expect(query.update).not.toHaveBeenCalled();
     expect(query.create).toHaveBeenCalledTimes(1);
+  });
+
+  test('stores null sha256 on update when entry sha256 is undefined', async () => {
+    const { strapi, query } = makeStrapi();
+    query.findMany.mockResolvedValue([{ id: 5, relativePath: 'mods/a.jar' }]);
+    query.update.mockResolvedValue({});
+
+    const service = buildService({ strapi } as never);
+    await service.upsertFileEntries(1, [
+      {
+        relativePath: 'mods/a.jar',
+        name: 'a.jar',
+        category: 'mods',
+        size: 100,
+        sha256: undefined,
+        isDir: false,
+        fileModifiedAt: undefined,
+      },
+    ]);
+
+    expect(query.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ sha256: null }) }),
+    );
+  });
+
+  test('stores null sha256 on create when entry sha256 is undefined', async () => {
+    const { strapi, query } = makeStrapi();
+    query.findMany.mockResolvedValue([]);
+    query.create.mockResolvedValue({});
+
+    const service = buildService({ strapi } as never);
+    await service.upsertFileEntries(1, [
+      {
+        relativePath: 'mods/new.jar',
+        name: 'new.jar',
+        category: 'mods',
+        size: 200,
+        sha256: undefined,
+        isDir: false,
+        fileModifiedAt: undefined,
+      },
+    ]);
+
+    expect(query.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ sha256: null }) }),
+    );
   });
 });

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Modal,
   Button,
@@ -6,13 +6,12 @@ import {
   TextInput,
 } from '@strapi/design-system';
 import { useNotification } from '@strapi/strapi/admin';
-import { useIntl } from 'react-intl';
 import { buildsApi } from '../../../../api/builds';
-import { getTranslation } from '../../../../utils/getTranslation';
-import type { FileEntry } from '../../../../../../shared/types/entities';
+import { useTranslate } from '../../../../hooks/useTranslate';
+import type { Artifact } from '../../../../../../shared/types/entities';
 
 interface RenameModalProps {
-  entry: FileEntry;
+  entry: Artifact;
   slug: string;
   onClose: () => void;
   onSuccess: (msg: string) => void;
@@ -20,9 +19,7 @@ interface RenameModalProps {
 
 const RenameModal = ({ entry, slug, onClose, onSuccess }: RenameModalProps) => {
   const { toggleNotification } = useNotification();
-  const { formatMessage } = useIntl();
-  const translate = (id: string, values?: Record<string, string | number>) =>
-    formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
+  const translate = useTranslate();
 
   const parentDir = entry.relativePath.includes('/')
     ? entry.relativePath.substring(0, entry.relativePath.lastIndexOf('/'))

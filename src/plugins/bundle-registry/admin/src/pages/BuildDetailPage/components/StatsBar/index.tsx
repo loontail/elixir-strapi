@@ -1,9 +1,8 @@
 import { memo, useState, useEffect } from 'react';
 import { Typography } from '@strapi/design-system';
-import { useIntl } from 'react-intl';
 import StatusBadge from '../../../../components/StatusBadge';
 import { formatBytes } from '../../../../utils/formatBytes';
-import { getTranslation } from '../../../../utils/getTranslation';
+import { useTranslate } from '../../../../hooks/useTranslate';
 import { buildsApi } from '../../../../api/builds';
 import type { Build } from '../../../../../../shared/types/entities';
 import { StatsBarRow, StatCard, StatLabel } from './styles';
@@ -12,9 +11,8 @@ interface StatsBarProps {
   build: Build;
 }
 
-const StatsBar = memo(({ build }: StatsBarProps) => {
-  const { formatMessage } = useIntl();
-  const translate = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
+const StatsBar = memo(function StatsBar({ build }: StatsBarProps) {
+  const translate = useTranslate();
 
   const [diskFree, setDiskFree] = useState<number | null>(null);
   useEffect(() => {
@@ -74,7 +72,5 @@ const StatsBar = memo(({ build }: StatsBarProps) => {
     </StatsBarRow>
   );
 });
-
-StatsBar.displayName = 'StatsBar';
 
 export { StatsBar };

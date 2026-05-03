@@ -4,16 +4,14 @@ import {
   Main,
   Button,
   Box,
-  Grid,
   TextInput,
   Textarea,
 } from '@strapi/design-system';
 import { ArrowLeft, Check } from '@strapi/icons';
 import { useNotification, Layouts } from '@strapi/strapi/admin';
-import { useIntl } from 'react-intl';
 import pluginId from '../../pluginId';
 import { buildsApi } from '../../api/builds';
-import { getTranslation } from '../../utils/getTranslation';
+import { useTranslate } from '../../hooks/useTranslate';
 
 interface BuildForm {
   name: string;
@@ -33,11 +31,9 @@ const autoSlug = (name: string): string =>
 const BuildCreatePage = () => {
   const navigate = useNavigate();
   const { toggleNotification } = useNotification();
-  const { formatMessage } = useIntl();
+  const translate = useTranslate();
   const [form, setForm] = useState<BuildForm>({ name: '', slug: '', description: '', version: '' });
   const [submitting, setSubmitting] = useState(false);
-
-  const translate = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
 
   const handleChange =
     (field: keyof BuildForm) =>
@@ -74,13 +70,15 @@ const BuildCreatePage = () => {
         title={translate('buildCreate.title')}
         subtitle={translate('buildCreate.subtitle')}
         navigationAction={
-          <Button
-            variant="tertiary"
-            startIcon={<ArrowLeft />}
-            onClick={() => navigate(`/plugins/${pluginId}`)}
-          >
-            {translate('buildCreate.back')}
-          </Button>
+          <Box alignSelf="flex-start">
+            <Button
+              variant="tertiary"
+              startIcon={<ArrowLeft />}
+              onClick={() => navigate(`/plugins/${pluginId}`)}
+            >
+              {translate('buildCreate.back')}
+            </Button>
+          </Box>
         }
         primaryAction={
           <Button startIcon={<Check />} loading={submitting} onClick={handleSubmit}>
@@ -90,38 +88,32 @@ const BuildCreatePage = () => {
       />
       <Layouts.Content>
         <Box background="neutral0" padding={6} shadow="filterShadow" hasRadius>
-          <Grid.Root gap={4}>
-            <Grid.Item col={6}>
-              <TextInput
-                label={translate('buildCreate.field.name')}
-                name="name"
-                value={form.name}
-                onChange={handleChange('name')}
-                required
-                placeholder={translate('buildCreate.field.name.placeholder')}
-              />
-            </Grid.Item>
-            <Grid.Item col={6}>
-              <TextInput
-                label={translate('buildCreate.field.slug')}
-                name="slug"
-                value={form.slug}
-                onChange={handleChange('slug')}
-                required
-                placeholder={translate('buildCreate.field.slug.placeholder')}
-                hint={translate('buildCreate.field.slug.hint')}
-              />
-            </Grid.Item>
-            <Grid.Item col={6}>
-              <TextInput
-                label={translate('buildCreate.field.version')}
-                name="version"
-                value={form.version}
-                onChange={handleChange('version')}
-                placeholder={translate('buildCreate.field.version.placeholder')}
-              />
-            </Grid.Item>
-            <Grid.Item col={12}>
+          <Box style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <TextInput
+              label={translate('buildCreate.field.name')}
+              name="name"
+              value={form.name}
+              onChange={handleChange('name')}
+              required
+              placeholder={translate('buildCreate.field.name.placeholder')}
+            />
+            <TextInput
+              label={translate('buildCreate.field.slug')}
+              name="slug"
+              value={form.slug}
+              onChange={handleChange('slug')}
+              required
+              placeholder={translate('buildCreate.field.slug.placeholder')}
+              hint={translate('buildCreate.field.slug.hint')}
+            />
+            <TextInput
+              label={translate('buildCreate.field.version')}
+              name="version"
+              value={form.version}
+              onChange={handleChange('version')}
+              placeholder={translate('buildCreate.field.version.placeholder')}
+            />
+            <Box style={{ gridColumn: 'span 2' }}>
               <Textarea
                 label={translate('buildCreate.field.description')}
                 name="description"
@@ -129,8 +121,8 @@ const BuildCreatePage = () => {
                 onChange={handleChange('description')}
                 placeholder={translate('buildCreate.field.description.placeholder')}
               />
-            </Grid.Item>
-          </Grid.Root>
+            </Box>
+          </Box>
         </Box>
       </Layouts.Content>
     </Main>

@@ -16,12 +16,13 @@ import {
 } from '@strapi/design-system';
 import { Plus, Trash } from '@strapi/icons';
 import { useNotification, Layouts } from '@strapi/strapi/admin';
-import { useIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import pluginId from '../../pluginId';
 import { buildsApi } from '../../api/builds';
 import StatusBadge from '../../components/StatusBadge';
 import { formatBytes } from '../../utils/formatBytes';
 import { getTranslation } from '../../utils/getTranslation';
+import { useTranslate } from '../../hooks/useTranslate';
 import type { Build } from '../../../../shared/types/entities';
 import { ClickableTr } from './styles';
 
@@ -32,10 +33,7 @@ const BuildListPage = () => {
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
   const { toggleNotification } = useNotification();
-  const { formatMessage } = useIntl();
-
-  const translate = (id: string, values?: Record<string, string>) =>
-    formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
+  const translate = useTranslate();
 
   const load = useCallback(() => {
     setLoading(true);

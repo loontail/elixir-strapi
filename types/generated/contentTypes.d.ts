@@ -644,67 +644,14 @@ export interface ApiMinecraftMinecraft extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface PluginBundleRegistryFileBuild
+export interface PluginBundleRegistryArtifact
   extends Struct.CollectionTypeSchema {
-  collectionName: 'file_builds';
-  info: {
-    description: 'File build with artifact manifest';
-    displayName: 'File Build';
-    pluralName: 'file-builds';
-    singularName: 'file-build';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  pluginOptions: {
-    'content-manager': {
-      visible: true;
-    };
-    'content-type-builder': {
-      visible: false;
-    };
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    description: Schema.Attribute.Text;
-    fileEntries: Schema.Attribute.Relation<
-      'oneToMany',
-      'plugin::bundle-registry.file-entry'
-    >;
-    filesCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    lastGeneratedAt: Schema.Attribute.DateTime;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'plugin::bundle-registry.file-build'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    processingError: Schema.Attribute.Text;
-    publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    status: Schema.Attribute.Enumeration<
-      ['draft', 'processing', 'ready', 'failed']
-    > &
-      Schema.Attribute.DefaultTo<'draft'>;
-    totalSize: Schema.Attribute.BigInteger & Schema.Attribute.DefaultTo<'0'>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    version: Schema.Attribute.String;
-  };
-}
-
-export interface PluginBundleRegistryFileEntry
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'file_entries';
+  collectionName: 'bundle_registry_artifacts';
   info: {
     description: 'Individual file within a build';
-    displayName: 'File Entry';
-    pluralName: 'file-entries';
-    singularName: 'file-entry';
+    displayName: 'Artifact';
+    pluralName: 'artifacts';
+    singularName: 'artifact';
   };
   options: {
     draftAndPublish: false;
@@ -720,7 +667,7 @@ export interface PluginBundleRegistryFileEntry
   attributes: {
     build: Schema.Attribute.Relation<
       'manyToOne',
-      'plugin::bundle-registry.file-build'
+      'plugin::bundle-registry.build'
     >;
     category: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
@@ -732,7 +679,7 @@ export interface PluginBundleRegistryFileEntry
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'plugin::bundle-registry.file-entry'
+      'plugin::bundle-registry.artifact'
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
@@ -743,6 +690,58 @@ export interface PluginBundleRegistryFileEntry
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface PluginBundleRegistryBuild extends Struct.CollectionTypeSchema {
+  collectionName: 'bundle_registry_builds';
+  info: {
+    description: 'File build with artifact manifest';
+    displayName: 'Build';
+    pluralName: 'builds';
+    singularName: 'build';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: true;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    artifacts: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::bundle-registry.artifact'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    filesCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    lastGeneratedAt: Schema.Attribute.DateTime;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::bundle-registry.build'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    processingError: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<
+      ['draft', 'processing', 'ready', 'failed']
+    > &
+      Schema.Attribute.DefaultTo<'draft'>;
+    totalSize: Schema.Attribute.BigInteger & Schema.Attribute.DefaultTo<'0'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    version: Schema.Attribute.String;
   };
 }
 
@@ -980,6 +979,94 @@ export interface PluginReviewWorkflowsWorkflowStage
       'manyToOne',
       'plugin::review-workflows.workflow'
     >;
+  };
+}
+
+export interface PluginSkinsRegistryPlayerCape
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'skins_registry_player_capes';
+  info: {
+    description: 'Minecraft player cape';
+    displayName: 'Player Cape';
+    pluralName: 'player-capes';
+    singularName: 'player-cape';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    filePath: Schema.Attribute.String & Schema.Attribute.Required;
+    fileSize: Schema.Attribute.Integer;
+    fileUrl: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::skins-registry.player-cape'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userId: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    username: Schema.Attribute.String;
+  };
+}
+
+export interface PluginSkinsRegistryPlayerSkin
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'skins_registry_player_skins';
+  info: {
+    description: 'Minecraft player skin';
+    displayName: 'Player Skin';
+    pluralName: 'player-skins';
+    singularName: 'player-skin';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    filePath: Schema.Attribute.String & Schema.Attribute.Required;
+    fileSize: Schema.Attribute.Integer;
+    fileUrl: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::skins-registry.player-skin'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userId: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    username: Schema.Attribute.String;
   };
 }
 
@@ -1261,13 +1348,15 @@ declare module '@strapi/strapi' {
       'api::client.client': ApiClientClient;
       'api::keyword.keyword': ApiKeywordKeyword;
       'api::minecraft.minecraft': ApiMinecraftMinecraft;
-      'plugin::bundle-registry.file-build': PluginBundleRegistryFileBuild;
-      'plugin::bundle-registry.file-entry': PluginBundleRegistryFileEntry;
+      'plugin::bundle-registry.artifact': PluginBundleRegistryArtifact;
+      'plugin::bundle-registry.build': PluginBundleRegistryBuild;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::review-workflows.workflow': PluginReviewWorkflowsWorkflow;
       'plugin::review-workflows.workflow-stage': PluginReviewWorkflowsWorkflowStage;
+      'plugin::skins-registry.player-cape': PluginSkinsRegistryPlayerCape;
+      'plugin::skins-registry.player-skin': PluginSkinsRegistryPlayerSkin;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;

@@ -37,6 +37,6 @@ module.exports = {
     '!server/**/__tests__/**',
   ],
   coverageThreshold: {
-    global: { lines: 80 },
+    global: { lines: 100 },
   },
 };

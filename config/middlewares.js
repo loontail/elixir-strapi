@@ -8,6 +8,7 @@ module.exports = [
   {
     name: "strapi::body",
     config: {
+      multipart: true,
       formLimit: "156mb",
       jsonLimit: "156mb",
       textLimit: "156mb",

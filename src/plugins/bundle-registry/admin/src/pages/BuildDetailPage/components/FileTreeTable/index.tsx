@@ -1,7 +1,6 @@
-import { memo, useState, useCallback } from 'react';
+﻿import { memo, useState, useCallback } from 'react';
 import { useTheme } from 'styled-components';
 import { Checkbox, Tooltip } from '@strapi/design-system';
-import { useIntl } from 'react-intl';
 import { FileTreeRow } from '../FileTreeRow';
 import {
   TableRoot,
@@ -25,9 +24,9 @@ import {
   DirCount,
 } from '../FileTreeRow/styles';
 import { ChevronDownIcon, ChevronRightIcon, FolderIcon, FolderOpenIcon } from '../../../../components/Icons';
-import { getTranslation } from '../../../../utils/getTranslation';
+import { useTranslate } from '../../../../hooks/useTranslate';
 import type { FlatRow, TreeNode } from '../../hooks/useFileTree';
-import type { FileEntry } from '../../../../../../shared/types/entities';
+import type { Artifact } from '../../../../../../shared/types/entities';
 
 interface FileTreeTableProps {
   rows: FlatRow[];
@@ -43,13 +42,13 @@ interface FileTreeTableProps {
   onToggleExpand: (key: string) => void;
   onToggleFile: (id: number) => void;
   onToggleDir: (node: TreeNode) => void;
-  onContextAction: (type: string, entry: FileEntry) => void;
-  onToggleDownloadOnce: (entry: FileEntry) => void;
-  onMove: (entry: FileEntry, newPath: string) => Promise<void>;
+  onContextAction: (type: string, entry: Artifact) => void;
+  onToggleDownloadOnce: (entry: Artifact) => void;
+  onMove: (entry: Artifact, newPath: string) => Promise<void>;
 }
 
 const FileTreeTable = memo(
-  ({
+  function FileTreeTable({
     rows,
     expanded,
     selected,
@@ -66,18 +65,17 @@ const FileTreeTable = memo(
     onContextAction,
     onToggleDownloadOnce,
     onMove,
-  }: FileTreeTableProps) => {
+  }: FileTreeTableProps) {
     const theme = useTheme();
     const colors = theme.colors;
-    const { formatMessage } = useIntl();
-    const translate = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
+    const translate = useTranslate();
 
-    const [draggedEntry, setDraggedEntry] = useState<FileEntry | null>(null);
+    const [draggedEntry, setDraggedEntry] = useState<Artifact | null>(null);
     const [dragOverKey, setDragOverKey] = useState<string | null>(null);
     const [isRootDragOver, setIsRootDragOver] = useState(false);
     const [isRootExpanded, setIsRootExpanded] = useState(true);
 
-    const handleDragStart = useCallback((entry: FileEntry) => {
+    const handleDragStart = useCallback((entry: Artifact) => {
       setDraggedEntry(entry);
     }, []);
 
@@ -242,7 +240,5 @@ const FileTreeTable = memo(
     );
   },
 );
-
-FileTreeTable.displayName = 'FileTreeTable';
 
 export { FileTreeTable };

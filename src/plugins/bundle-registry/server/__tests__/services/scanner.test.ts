@@ -121,4 +121,21 @@ describe('scanDirectory', () => {
 
     expect(scanResults[0].sha256).toBe(directHash);
   });
+
+  test('falls back to birthtime when mtime is null', async () => {
+    fsSync.writeFileSync(path.join(tmpDir, 'file.txt'), 'content');
+    const birthtime = new Date('2020-01-01T00:00:00.000Z');
+    const statSpy = jest.spyOn(fsSync, 'statSync').mockReturnValue({
+      size: 7,
+      mtime: null as unknown as Date,
+      birthtime,
+    } as fsSync.Stats);
+
+    try {
+      const results = await scanDirectory(tmpDir);
+      expect(results[0].fileModifiedAt).toBe(birthtime.toISOString());
+    } finally {
+      statSpy.mockRestore();
+    }
+  });
 });

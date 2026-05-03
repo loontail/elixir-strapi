@@ -2,10 +2,9 @@ import { memo, Fragment } from 'react';
 import { useTheme } from 'styled-components';
 import { Checkbox, Typography, IconButton, SimpleMenu, MenuItem } from '@strapi/design-system';
 import { More } from '@strapi/icons';
-import { useIntl } from 'react-intl';
 import { PencilIcon, UploadIcon, HashIcon, TrashIcon, FolderIcon, FolderOpenIcon, FileIcon, ChevronRightIcon, ChevronDownIcon } from '../../../../components/Icons';
 import { formatBytes } from '../../../../utils/formatBytes';
-import { getTranslation } from '../../../../utils/getTranslation';
+import { useTranslate } from '../../../../hooks/useTranslate';
 import { getFileIds } from '../../hooks/useFileTree';
 import {
   DirRow,
@@ -35,7 +34,7 @@ import {
   DangerLabel,
 } from './styles';
 import type { FlatRow, TreeNode } from '../../hooks/useFileTree';
-import type { FileEntry } from '../../../../../../shared/types/entities';
+import type { Artifact } from '../../../../../../shared/types/entities';
 
 interface FileTreeRowProps {
   row: FlatRow;
@@ -48,9 +47,9 @@ interface FileTreeRowProps {
   onToggleExpand: (key: string) => void;
   onToggleFile: (id: number) => void;
   onToggleDir: (node: TreeNode) => void;
-  onContextAction: (type: string, entry: FileEntry) => void;
-  onToggleDownloadOnce: (entry: FileEntry) => void;
-  onDragStart: (entry: FileEntry) => void;
+  onContextAction: (type: string, entry: Artifact) => void;
+  onToggleDownloadOnce: (entry: Artifact) => void;
+  onDragStart: (entry: Artifact) => void;
   onDragEnd: () => void;
   onDragOverDir: (key: string) => void;
   onDragLeaveDir: () => void;
@@ -65,7 +64,7 @@ const formatDate = (raw?: string): string => {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
-const FileTreeRow = memo(({
+const FileTreeRow = memo(function FileTreeRow({
   row: { node, depth, lineFlags },
   expanded,
   selected,
@@ -82,12 +81,10 @@ const FileTreeRow = memo(({
   onDragOverDir,
   onDragLeaveDir,
   onDropOnDir,
-}: FileTreeRowProps) => {
+}: FileTreeRowProps) {
   const theme = useTheme();
   const colors = theme.colors;
-  const { formatMessage } = useIntl();
-  const translate = (id: string, values?: Record<string, string | number>) =>
-    formatMessage({ id: getTranslation(id), defaultMessage: id }, values);
+  const translate = useTranslate();
 
   const guideLines = depth === 0 ? null : Array.from({ length: depth }, (_, depthIndex) => {
     const isImmediate = depthIndex === depth - 1;
@@ -229,10 +226,10 @@ const FileTreeRow = memo(({
             title={translate('buildDetail.table.hashChip.copyTitle', { hash: entry.sha256 })}
             onClick={() => navigator.clipboard.writeText(entry.sha256!)}
           >
-            …{entry.sha256.slice(-12)}
+            {'…'}{entry.sha256.slice(-12)}
           </HashChip>
         ) : (
-          <Typography variant="omega" textColor="neutral400">—</Typography>
+          <Typography variant="omega" textColor="neutral400">{'—'}</Typography>
         )}
       </HashCell>
       <DlCell>
@@ -267,7 +264,5 @@ const FileTreeRow = memo(({
     </FileRow>
   );
 });
-
-FileTreeRow.displayName = 'FileTreeRow';
 
 export { FileTreeRow };

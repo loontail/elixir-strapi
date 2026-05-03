@@ -1,8 +1,7 @@
 import { memo } from 'react';
 import { Button, Flex } from '@strapi/design-system';
 import { ArrowClockwise, Upload, Plus } from '@strapi/icons';
-import { useIntl } from 'react-intl';
-import { getTranslation } from '../../../../utils/getTranslation';
+import { useTranslate } from '../../../../hooks/useTranslate';
 
 interface ToolbarProps {
   uploading: boolean;
@@ -15,7 +14,7 @@ interface ToolbarProps {
 }
 
 const Toolbar = memo(
-  ({
+  function Toolbar({
     uploading,
     regenerating,
     validating,
@@ -23,9 +22,8 @@ const Toolbar = memo(
     onRegenerate,
     onAddFile,
     onUploadZip,
-  }: ToolbarProps) => {
-    const { formatMessage } = useIntl();
-    const translate = (id: string) => formatMessage({ id: getTranslation(id), defaultMessage: id });
+  }: ToolbarProps) {
+    const translate = useTranslate();
 
     return (
       <Flex gap={2}>
@@ -67,7 +65,5 @@ const Toolbar = memo(
     );
   },
 );
-
-Toolbar.displayName = 'Toolbar';
 
 export { Toolbar };
