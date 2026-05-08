@@ -1,25 +1,27 @@
 import { createHash } from 'crypto';
+import type { StrapiInstance } from '../types';
 
-export default async (
-  policyContext: { request: { header: Record<string, string> } },
+interface PolicyCtx {
+  request: { header: Record<string, string> };
+}
+
+const getAuthHeader = (header: Record<string, string>): string | undefined =>
+  header.authorization || header.Authorization;
+
+const apiTokenAuth = async (
+  ctx: PolicyCtx,
   _config: unknown,
-  {
-    strapi,
-  }: {
-    strapi: { db: { query: (uid: string) => { findOne: (opts: unknown) => Promise<unknown> } } };
-  },
+  { strapi }: { strapi: StrapiInstance },
 ): Promise<boolean> => {
-  const authHeader =
-    policyContext.request.header['authorization'] || policyContext.request.header['Authorization'];
+  const auth = getAuthHeader(ctx.request.header);
+  if (!auth || !auth.startsWith('Bearer ')) return false;
 
-  if (!authHeader?.startsWith('Bearer ')) return false;
+  const rawToken = auth.slice('Bearer '.length).trim();
+  if (!rawToken) return false;
 
-  const rawToken = authHeader.slice(7).trim();
   const accessKey = createHash('sha512').update(rawToken).digest('hex');
-
-  const token = await strapi.db.query('admin::api-token').findOne({
-    where: { accessKey },
-  });
-
-  return Boolean(token);
+  const record = await strapi.db.query('admin::api-token').findOne({ where: { accessKey } });
+  return Boolean(record);
 };
+
+export default apiTokenAuth;

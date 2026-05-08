@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
+import { randomBytes } from 'crypto';
 
 const BASE_RELATIVE = join('public', 'skins-registry');
 
@@ -7,11 +8,23 @@ const getBasePath = (): string => resolve(process.cwd(), BASE_RELATIVE);
 const getSkinsPath = (): string => join(getBasePath(), 'skins');
 const getCapesPath = (): string => join(getBasePath(), 'capes');
 
-const getSkinFilePath = (userId: number): string => join(getSkinsPath(), `${userId}.png`);
-const getCapeFilePath = (userId: number): string => join(getCapesPath(), `${userId}.png`);
+// Each upload gets its own filename so the public URL changes too. That's
+// the whole point of this layout: HTTP caches (Chromium in the launcher,
+// any reverse proxy in front of Strapi) see a brand-new resource and never
+// serve stale bytes for a freshly-uploaded skin. The previous file lives
+// at the path stored on the prior DB row and is cleaned up by the
+// controller after the new row is committed.
+const REVISION_BYTES = 6;
+const generateRevision = (): string => randomBytes(REVISION_BYTES).toString('hex');
 
-const getSkinFileUrl = (userId: number): string => `/skins-registry/skins/${userId}.png`;
-const getCapeFileUrl = (userId: number): string => `/skins-registry/capes/${userId}.png`;
+const buildSkinFilename = (userId: number): string => `${userId}-${generateRevision()}.png`;
+const buildCapeFilename = (userId: number): string => `${userId}-${generateRevision()}.png`;
+
+const getSkinFilePath = (filename: string): string => join(getSkinsPath(), filename);
+const getCapeFilePath = (filename: string): string => join(getCapesPath(), filename);
+
+const getSkinFileUrl = (filename: string): string => `/skins-registry/skins/${filename}`;
+const getCapeFileUrl = (filename: string): string => `/skins-registry/capes/${filename}`;
 
 const ensureDirs = (): void => {
   mkdirSync(getSkinsPath(), { recursive: true });
@@ -25,26 +38,22 @@ const deleteFileIfExists = (filePath: string): void => {
 const readFileOrNull = (filePath: string): Buffer | null =>
   existsSync(filePath) ? readFileSync(filePath) : null;
 
-const writeSkinFile = (userId: number, buffer: Buffer): void => {
+const writeSkinFile = (filename: string, buffer: Buffer): void => {
   ensureDirs();
-  writeFileSync(getSkinFilePath(userId), buffer);
+  writeFileSync(getSkinFilePath(filename), buffer);
 };
 
-const writeCapeFile = (userId: number, buffer: Buffer): void => {
+const writeCapeFile = (filename: string, buffer: Buffer): void => {
   ensureDirs();
-  writeFileSync(getCapeFilePath(userId), buffer);
+  writeFileSync(getCapeFilePath(filename), buffer);
 };
-
-const deleteSkinFile = (userId: number): void => deleteFileIfExists(getSkinFilePath(userId));
-const deleteCapeFile = (userId: number): void => deleteFileIfExists(getCapeFilePath(userId));
-
-const readSkinFile = (userId: number): Buffer | null => readFileOrNull(getSkinFilePath(userId));
-const readCapeFile = (userId: number): Buffer | null => readFileOrNull(getCapeFilePath(userId));
 
 export {
   getBasePath,
   getSkinsPath,
   getCapesPath,
+  buildSkinFilename,
+  buildCapeFilename,
   getSkinFilePath,
   getCapeFilePath,
   getSkinFileUrl,
@@ -52,10 +61,6 @@ export {
   ensureDirs,
   writeSkinFile,
   writeCapeFile,
-  deleteSkinFile,
-  deleteCapeFile,
-  readSkinFile,
-  readCapeFile,
   deleteFileIfExists,
   readFileOrNull,
 };

@@ -447,13 +447,6 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
     };
   };
   attributes: {
-    artifactsPath: Schema.Attribute.String &
-      Schema.Attribute.CustomField<'plugin::bundle-registry.build-picker'> &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     available: Schema.Attribute.Boolean &
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
@@ -464,6 +457,13 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
       Schema.Attribute.DefaultTo<false>;
     background: Schema.Attribute.Media<'images'> &
       Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    bundleSlug: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::bundle-registry.build-picker'> &
       Schema.Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
@@ -481,13 +481,6 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
     keywords: Schema.Attribute.Relation<'oneToMany', 'api::keyword.keyword'>;
     locale: Schema.Attribute.String;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::client.client'>;
-    metadataUrl: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     minecraftVersion: Schema.Attribute.Relation<
       'oneToOne',
       'api::minecraft.minecraft'
@@ -506,24 +499,12 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
           localized: true;
         };
       }>;
-    servers: Schema.Attribute.JSON &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    servers: Schema.Attribute.Relation<'oneToMany', 'api::server.server'>;
     shortDescription: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
-        };
-      }>;
-    slug: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: false;
         };
       }>;
     title: Schema.Attribute.String &
@@ -543,13 +524,6 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    uuid: Schema.Attribute.UID<'title'> &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
   };
 }
 
@@ -641,6 +615,35 @@ export interface ApiMinecraftMinecraft extends Struct.CollectionTypeSchema {
           localized: true;
         };
       }>;
+  };
+}
+
+export interface ApiServerServer extends Struct.CollectionTypeSchema {
+  collectionName: 'servers';
+  info: {
+    displayName: 'Server';
+    pluralName: 'servers';
+    singularName: 'server';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    address: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::server.server'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1348,6 +1351,7 @@ declare module '@strapi/strapi' {
       'api::client.client': ApiClientClient;
       'api::keyword.keyword': ApiKeywordKeyword;
       'api::minecraft.minecraft': ApiMinecraftMinecraft;
+      'api::server.server': ApiServerServer;
       'plugin::bundle-registry.artifact': PluginBundleRegistryArtifact;
       'plugin::bundle-registry.build': PluginBundleRegistryBuild;
       'plugin::content-releases.release': PluginContentReleasesRelease;

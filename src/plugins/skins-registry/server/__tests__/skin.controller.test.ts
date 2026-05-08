@@ -12,17 +12,24 @@ jest.mock('fs', () => ({
 }));
 
 jest.mock('../services/storage', () => ({
-  getSkinFilePath: jest.fn((id: number) => `/public/skins-registry/skins/${id}.png`),
-  getCapeFilePath: jest.fn((id: number) => `/public/skins-registry/capes/${id}.png`),
-  getSkinFileUrl: jest.fn((id: number) => `/skins-registry/skins/${id}.png`),
-  getCapeFileUrl: jest.fn((id: number) => `/skins-registry/capes/${id}.png`),
+  buildSkinFilename: jest.fn((id: number) => `${id}-rev.png`),
+  buildCapeFilename: jest.fn((id: number) => `${id}-rev.png`),
+  getSkinFilePath: jest.fn((filename: string) => `/public/skins-registry/skins/${filename}`),
+  getCapeFilePath: jest.fn((filename: string) => `/public/skins-registry/capes/${filename}`),
+  getSkinFileUrl: jest.fn((filename: string) => `/skins-registry/skins/${filename}`),
+  getCapeFileUrl: jest.fn((filename: string) => `/skins-registry/capes/${filename}`),
   writeSkinFile: jest.fn(),
   writeCapeFile: jest.fn(),
-  deleteSkinFile: jest.fn(),
-  deleteCapeFile: jest.fn(),
+  deleteFileIfExists: jest.fn(),
 }));
 
-import { writeSkinFile, writeCapeFile, deleteSkinFile, deleteCapeFile } from '../services/storage';
+import {
+  writeSkinFile,
+  writeCapeFile,
+  deleteFileIfExists,
+  buildSkinFilename,
+  buildCapeFilename,
+} from '../services/storage';
 
 beforeEach(() => jest.clearAllMocks());
 
@@ -50,8 +57,8 @@ const makeCtx = (
 // ── makeStrapi helper ─────────────────────────────────────────────────────────
 
 const makeMockService = () => ({
-  findSkinByUserId: jest.fn(),
-  findCapeByUserId: jest.fn(),
+  findSkinByUserId: jest.fn().mockResolvedValue(null),
+  findCapeByUserId: jest.fn().mockResolvedValue(null),
   upsertSkin: jest.fn(),
   upsertCape: jest.fn(),
   deleteSkinByUserId: jest.fn(),
@@ -270,7 +277,7 @@ describe('skinController.uploadSkin', () => {
   const fakeBuffer = Buffer.from('png-data');
   const fakeFile = { filepath: '/tmp/upload.png', mimetype: 'image/png' };
 
-  it('writes skin file and upserts record', async () => {
+  it('writes a per-upload filename and upserts with the resolved path/url', async () => {
     (readFileSync as jest.Mock).mockReturnValue(fakeBuffer);
     const service = makeMockService();
     service.upsertSkin.mockResolvedValue({ id: 1, userId: 3 });
@@ -279,15 +286,49 @@ describe('skinController.uploadSkin', () => {
 
     await controller.uploadSkin(ctx);
 
-    expect(writeSkinFile).toHaveBeenCalledWith(3, fakeBuffer);
+    expect(buildSkinFilename).toHaveBeenCalledWith(3);
+    expect(writeSkinFile).toHaveBeenCalledWith('3-rev.png', fakeBuffer);
     expect(service.upsertSkin).toHaveBeenCalledWith(
       3,
       expect.objectContaining({
-        fileUrl: '/skins-registry/skins/3.png',
+        username: 'steve',
+        filePath: '/public/skins-registry/skins/3-rev.png',
+        fileUrl: '/skins-registry/skins/3-rev.png',
         fileSize: fakeBuffer.length,
       }),
     );
     expect(ctx.body).toEqual({ id: 1, userId: 3 });
+  });
+
+  it('cleans up the previous file after a successful re-upload', async () => {
+    (readFileSync as jest.Mock).mockReturnValue(fakeBuffer);
+    const service = makeMockService();
+    service.findSkinByUserId.mockResolvedValue({
+      id: 1,
+      userId: 3,
+      filePath: '/public/skins-registry/skins/3-old.png',
+      fileUrl: '/skins-registry/skins/3-old.png',
+    });
+    service.upsertSkin.mockResolvedValue({ id: 1, userId: 3 });
+    const controller = skinController({ strapi: makeMockStrapi(service) as never });
+    const ctx = makeCtx({ userId: '3' }, {}, {}, { file: fakeFile });
+
+    await controller.uploadSkin(ctx);
+
+    expect(deleteFileIfExists).toHaveBeenCalledWith('/public/skins-registry/skins/3-old.png');
+  });
+
+  it('does not delete anything when there is no prior row', async () => {
+    (readFileSync as jest.Mock).mockReturnValue(fakeBuffer);
+    const service = makeMockService();
+    service.findSkinByUserId.mockResolvedValue(null);
+    service.upsertSkin.mockResolvedValue({ id: 1, userId: 4 });
+    const controller = skinController({ strapi: makeMockStrapi(service) as never });
+    const ctx = makeCtx({ userId: '4' }, {}, {}, { file: fakeFile });
+
+    await controller.uploadSkin(ctx);
+
+    expect(deleteFileIfExists).not.toHaveBeenCalled();
   });
 
   it('accepts array file (getFormidableFile picks first)', async () => {
@@ -299,7 +340,7 @@ describe('skinController.uploadSkin', () => {
 
     await controller.uploadSkin(ctx);
 
-    expect(writeSkinFile).toHaveBeenCalledWith(4, fakeBuffer);
+    expect(writeSkinFile).toHaveBeenCalledWith('4-rev.png', fakeBuffer);
   });
 
   it('calls badRequest when userId invalid', async () => {
@@ -341,7 +382,7 @@ describe('skinController.uploadCape', () => {
   const fakeBuffer = Buffer.from('cape-png');
   const fakeFile = { filepath: '/tmp/cape.png', mimetype: 'image/png' };
 
-  it('writes cape file and upserts record', async () => {
+  it('writes a per-upload filename and upserts the cape record', async () => {
     (readFileSync as jest.Mock).mockReturnValue(fakeBuffer);
     const service = makeMockService();
     service.upsertCape.mockResolvedValue({ id: 5, userId: 8 });
@@ -350,8 +391,27 @@ describe('skinController.uploadCape', () => {
 
     await controller.uploadCape(ctx);
 
-    expect(writeCapeFile).toHaveBeenCalledWith(8, fakeBuffer);
+    expect(buildCapeFilename).toHaveBeenCalledWith(8);
+    expect(writeCapeFile).toHaveBeenCalledWith('8-rev.png', fakeBuffer);
     expect(ctx.body).toEqual({ id: 5, userId: 8 });
+  });
+
+  it('cleans up the previous cape file after a re-upload', async () => {
+    (readFileSync as jest.Mock).mockReturnValue(fakeBuffer);
+    const service = makeMockService();
+    service.findCapeByUserId.mockResolvedValue({
+      id: 5,
+      userId: 8,
+      filePath: '/public/skins-registry/capes/8-old.png',
+      fileUrl: '/skins-registry/capes/8-old.png',
+    });
+    service.upsertCape.mockResolvedValue({ id: 5, userId: 8 });
+    const controller = skinController({ strapi: makeMockStrapi(service) as never });
+    const ctx = makeCtx({ userId: '8' }, {}, {}, { file: fakeFile });
+
+    await controller.uploadCape(ctx);
+
+    expect(deleteFileIfExists).toHaveBeenCalledWith('/public/skins-registry/capes/8-old.png');
   });
 
   it('calls badRequest when userId invalid', async () => {
@@ -390,17 +450,34 @@ describe('skinController.uploadCape', () => {
 // ── deleteSkin ────────────────────────────────────────────────────────────────
 
 describe('skinController.deleteSkin', () => {
-  it('deletes the skin file and DB record', async () => {
+  it('deletes the file referenced by the row and clears the DB record', async () => {
     const service = makeMockService();
+    service.findSkinByUserId.mockResolvedValue({
+      id: 1,
+      userId: 5,
+      filePath: '/public/skins-registry/skins/5-rev.png',
+    });
     service.deleteSkinByUserId.mockResolvedValue(undefined);
     const controller = skinController({ strapi: makeMockStrapi(service) as never });
     const ctx = makeCtx({ userId: '5' });
 
     await controller.deleteSkin(ctx);
 
-    expect(deleteSkinFile).toHaveBeenCalledWith(5);
+    expect(deleteFileIfExists).toHaveBeenCalledWith('/public/skins-registry/skins/5-rev.png');
     expect(service.deleteSkinByUserId).toHaveBeenCalledWith(5);
     expect(ctx.body).toEqual({ success: true });
+  });
+
+  it('does not touch disk when there is no row for that user', async () => {
+    const service = makeMockService();
+    service.findSkinByUserId.mockResolvedValue(null);
+    const controller = skinController({ strapi: makeMockStrapi(service) as never });
+    const ctx = makeCtx({ userId: '5' });
+
+    await controller.deleteSkin(ctx);
+
+    expect(deleteFileIfExists).not.toHaveBeenCalled();
+    expect(service.deleteSkinByUserId).toHaveBeenCalledWith(5);
   });
 
   it('calls badRequest when userId invalid', async () => {
@@ -416,15 +493,20 @@ describe('skinController.deleteSkin', () => {
 // ── deleteCape ────────────────────────────────────────────────────────────────
 
 describe('skinController.deleteCape', () => {
-  it('deletes the cape file and DB record', async () => {
+  it('deletes the file referenced by the row and clears the DB record', async () => {
     const service = makeMockService();
+    service.findCapeByUserId.mockResolvedValue({
+      id: 2,
+      userId: 6,
+      filePath: '/public/skins-registry/capes/6-rev.png',
+    });
     service.deleteCapeByUserId.mockResolvedValue(undefined);
     const controller = skinController({ strapi: makeMockStrapi(service) as never });
     const ctx = makeCtx({ userId: '6' });
 
     await controller.deleteCape(ctx);
 
-    expect(deleteCapeFile).toHaveBeenCalledWith(6);
+    expect(deleteFileIfExists).toHaveBeenCalledWith('/public/skins-registry/capes/6-rev.png');
     expect(service.deleteCapeByUserId).toHaveBeenCalledWith(6);
     expect(ctx.body).toEqual({ success: true });
   });
@@ -442,8 +524,18 @@ describe('skinController.deleteCape', () => {
 // ── deletePlayerAssets ────────────────────────────────────────────────────────
 
 describe('skinController.deletePlayerAssets', () => {
-  it('deletes both skin and cape files and records', async () => {
+  it('deletes both skin and cape files (per stored filePath) and DB rows', async () => {
     const service = makeMockService();
+    service.findSkinByUserId.mockResolvedValue({
+      id: 1,
+      userId: 9,
+      filePath: '/public/skins-registry/skins/9-rev.png',
+    });
+    service.findCapeByUserId.mockResolvedValue({
+      id: 2,
+      userId: 9,
+      filePath: '/public/skins-registry/capes/9-rev.png',
+    });
     service.deleteSkinByUserId.mockResolvedValue(undefined);
     service.deleteCapeByUserId.mockResolvedValue(undefined);
     const controller = skinController({ strapi: makeMockStrapi(service) as never });
@@ -451,11 +543,30 @@ describe('skinController.deletePlayerAssets', () => {
 
     await controller.deletePlayerAssets(ctx);
 
-    expect(deleteSkinFile).toHaveBeenCalledWith(9);
-    expect(deleteCapeFile).toHaveBeenCalledWith(9);
+    expect(deleteFileIfExists).toHaveBeenCalledWith('/public/skins-registry/skins/9-rev.png');
+    expect(deleteFileIfExists).toHaveBeenCalledWith('/public/skins-registry/capes/9-rev.png');
     expect(service.deleteSkinByUserId).toHaveBeenCalledWith(9);
     expect(service.deleteCapeByUserId).toHaveBeenCalledWith(9);
     expect(ctx.body).toEqual({ success: true });
+  });
+
+  it('skips disk cleanup for whichever record is missing', async () => {
+    const service = makeMockService();
+    service.findSkinByUserId.mockResolvedValue(null);
+    service.findCapeByUserId.mockResolvedValue({
+      id: 2,
+      userId: 9,
+      filePath: '/public/skins-registry/capes/9-rev.png',
+    });
+    service.deleteSkinByUserId.mockResolvedValue(undefined);
+    service.deleteCapeByUserId.mockResolvedValue(undefined);
+    const controller = skinController({ strapi: makeMockStrapi(service) as never });
+    const ctx = makeCtx({ userId: '9' });
+
+    await controller.deletePlayerAssets(ctx);
+
+    expect(deleteFileIfExists).toHaveBeenCalledTimes(1);
+    expect(deleteFileIfExists).toHaveBeenCalledWith('/public/skins-registry/capes/9-rev.png');
   });
 
   it('calls badRequest when userId invalid', async () => {
@@ -507,7 +618,7 @@ describe('skinController.listCapes', () => {
 // ── adminUploadSkin ───────────────────────────────────────────────────────────
 
 describe('skinController.adminUploadSkin', () => {
-  it('decodes base64 and writes skin file', async () => {
+  it('decodes base64 and persists with a per-upload filename', async () => {
     const service = makeMockService();
     service.upsertSkin.mockResolvedValue({ id: 1, userId: 3 });
     const controller = skinController({ strapi: makeMockStrapi(service) as never });
@@ -516,7 +627,8 @@ describe('skinController.adminUploadSkin', () => {
 
     await controller.adminUploadSkin(ctx);
 
-    expect(writeSkinFile).toHaveBeenCalled();
+    expect(buildSkinFilename).toHaveBeenCalledWith(3);
+    expect(writeSkinFile).toHaveBeenCalledWith('3-rev.png', expect.any(Buffer));
     expect(service.upsertSkin).toHaveBeenCalledWith(
       3,
       expect.objectContaining({ username: 'herobrine' }),
@@ -546,7 +658,7 @@ describe('skinController.adminUploadSkin', () => {
 // ── adminUploadCape ───────────────────────────────────────────────────────────
 
 describe('skinController.adminUploadCape', () => {
-  it('decodes base64 and writes cape file', async () => {
+  it('decodes base64 and persists with a per-upload filename', async () => {
     const service = makeMockService();
     service.upsertCape.mockResolvedValue({ id: 2, userId: 4 });
     const controller = skinController({ strapi: makeMockStrapi(service) as never });
@@ -555,7 +667,8 @@ describe('skinController.adminUploadCape', () => {
 
     await controller.adminUploadCape(ctx);
 
-    expect(writeCapeFile).toHaveBeenCalled();
+    expect(buildCapeFilename).toHaveBeenCalledWith(4);
+    expect(writeCapeFile).toHaveBeenCalledWith('4-rev.png', expect.any(Buffer));
     expect(ctx.body).toEqual({ id: 2, userId: 4 });
   });
 
@@ -581,9 +694,13 @@ describe('skinController.adminUploadCape', () => {
 // ── adminDeleteSkin ───────────────────────────────────────────────────────────
 
 describe('skinController.adminDeleteSkin', () => {
-  it('deletes skin by DB id', async () => {
+  it('deletes the file referenced by the row and the DB record', async () => {
     const skinDbQuery = makeMockQuery();
-    skinDbQuery.findOne.mockResolvedValue({ id: 5, userId: 10 });
+    skinDbQuery.findOne.mockResolvedValue({
+      id: 5,
+      userId: 10,
+      filePath: '/public/skins-registry/skins/10-rev.png',
+    });
     skinDbQuery.delete.mockResolvedValue(undefined);
     const strapi = makeMockStrapi(makeMockService(), skinDbQuery);
     const controller = skinController({ strapi: strapi as never });
@@ -591,7 +708,7 @@ describe('skinController.adminDeleteSkin', () => {
 
     await controller.adminDeleteSkin(ctx);
 
-    expect(deleteSkinFile).toHaveBeenCalledWith(10);
+    expect(deleteFileIfExists).toHaveBeenCalledWith('/public/skins-registry/skins/10-rev.png');
     expect(skinDbQuery.delete).toHaveBeenCalledWith({ where: { id: 5 } });
     expect(ctx.body).toEqual({ success: true });
   });
@@ -621,9 +738,13 @@ describe('skinController.adminDeleteSkin', () => {
 // ── adminDeleteCape ───────────────────────────────────────────────────────────
 
 describe('skinController.adminDeleteCape', () => {
-  it('deletes cape by DB id', async () => {
+  it('deletes the file referenced by the row and the DB record', async () => {
     const capeDbQuery = makeMockQuery();
-    capeDbQuery.findOne.mockResolvedValue({ id: 8, userId: 15 });
+    capeDbQuery.findOne.mockResolvedValue({
+      id: 8,
+      userId: 15,
+      filePath: '/public/skins-registry/capes/15-rev.png',
+    });
     capeDbQuery.delete.mockResolvedValue(undefined);
     const strapi = makeMockStrapi(makeMockService(), makeMockQuery(), capeDbQuery);
     const controller = skinController({ strapi: strapi as never });
@@ -631,7 +752,7 @@ describe('skinController.adminDeleteCape', () => {
 
     await controller.adminDeleteCape(ctx);
 
-    expect(deleteCapeFile).toHaveBeenCalledWith(15);
+    expect(deleteFileIfExists).toHaveBeenCalledWith('/public/skins-registry/capes/15-rev.png');
     expect(capeDbQuery.delete).toHaveBeenCalledWith({ where: { id: 8 } });
     expect(ctx.body).toEqual({ success: true });
   });

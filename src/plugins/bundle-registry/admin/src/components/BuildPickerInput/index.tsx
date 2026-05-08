@@ -46,8 +46,10 @@ const BuildPickerInput = ({
       .finally(() => setLoading(false));
   }, []);
 
+  const selectedSlug = value ?? '';
+
   const handleChange = (selected: string | number) => {
-    onChange({ target: { name, value: String(selected || ''), type: attribute.type } });
+    onChange({ target: { name, value: selected ? String(selected) : '', type: 'string' } });
   };
 
   return (
@@ -61,7 +63,7 @@ const BuildPickerInput = ({
         <SingleSelect
           id={name}
           name={name}
-          value={value || ''}
+          value={selectedSlug}
           onChange={handleChange}
           disabled={disabled}
           placeholder={translate('build-picker.placeholder')}

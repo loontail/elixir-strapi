@@ -4,13 +4,11 @@ import {
   getCapeFilePath,
   getSkinFileUrl,
   getCapeFileUrl,
+  buildSkinFilename,
+  buildCapeFilename,
   ensureDirs,
   writeSkinFile,
   writeCapeFile,
-  deleteSkinFile,
-  deleteCapeFile,
-  readSkinFile,
-  readCapeFile,
   deleteFileIfExists,
   readFileOrNull,
 } from '../services/storage';
@@ -26,20 +24,38 @@ jest.mock('fs', () => ({
 beforeEach(() => jest.clearAllMocks());
 
 describe('storage — URL and path helpers', () => {
-  it('getSkinFileUrl returns the correct public URL', () => {
-    expect(getSkinFileUrl(42)).toBe('/skins-registry/skins/42.png');
+  it('getSkinFileUrl returns the public URL for a given filename', () => {
+    expect(getSkinFileUrl('42-abc.png')).toBe('/skins-registry/skins/42-abc.png');
   });
 
-  it('getCapeFileUrl returns the correct public URL', () => {
-    expect(getCapeFileUrl(7)).toBe('/skins-registry/capes/7.png');
+  it('getCapeFileUrl returns the public URL for a given filename', () => {
+    expect(getCapeFileUrl('7-deadbeef.png')).toBe('/skins-registry/capes/7-deadbeef.png');
   });
 
-  it('getSkinFilePath ends with the expected filename', () => {
-    expect(getSkinFilePath(1)).toMatch(/[/\\]skins[/\\]1\.png$/);
+  it('getSkinFilePath ends with the supplied filename', () => {
+    expect(getSkinFilePath('1-cafef00d.png')).toMatch(/[/\\]skins[/\\]1-cafef00d\.png$/);
   });
 
-  it('getCapeFilePath ends with the expected filename', () => {
-    expect(getCapeFilePath(99)).toMatch(/[/\\]capes[/\\]99\.png$/);
+  it('getCapeFilePath ends with the supplied filename', () => {
+    expect(getCapeFilePath('99-feedface.png')).toMatch(/[/\\]capes[/\\]99-feedface\.png$/);
+  });
+});
+
+describe('storage — buildSkinFilename / buildCapeFilename', () => {
+  it('encodes the userId and a random hex revision', () => {
+    const filename = buildSkinFilename(42);
+    // <userId>-<12 hex chars>.png — REVISION_BYTES=6 → 12 hex chars.
+    expect(filename).toMatch(/^42-[0-9a-f]{12}\.png$/);
+  });
+
+  it('produces a different filename on each call (per upload uniqueness)', () => {
+    const a = buildSkinFilename(1);
+    const b = buildSkinFilename(1);
+    expect(a).not.toBe(b);
+  });
+
+  it('cape filenames follow the same shape', () => {
+    expect(buildCapeFilename(7)).toMatch(/^7-[0-9a-f]{12}\.png$/);
   });
 });
 
@@ -55,16 +71,22 @@ describe('storage — ensureDirs', () => {
 });
 
 describe('storage — write', () => {
-  it('writeSkinFile calls mkdirSync then writeFileSync with correct path and buffer', () => {
+  it('writeSkinFile writes the buffer at the resolved skin path', () => {
     const buffer = Buffer.from('fake-skin-data');
-    writeSkinFile(5, buffer);
-    expect(writeFileSync).toHaveBeenCalledWith(expect.stringMatching(/skins[/\\]5\.png$/), buffer);
+    writeSkinFile('5-abcd0001.png', buffer);
+    expect(writeFileSync).toHaveBeenCalledWith(
+      expect.stringMatching(/skins[/\\]5-abcd0001\.png$/),
+      buffer,
+    );
   });
 
-  it('writeCapeFile calls mkdirSync then writeFileSync with correct path and buffer', () => {
+  it('writeCapeFile writes the buffer at the resolved cape path', () => {
     const buffer = Buffer.from('fake-cape-data');
-    writeCapeFile(3, buffer);
-    expect(writeFileSync).toHaveBeenCalledWith(expect.stringMatching(/capes[/\\]3\.png$/), buffer);
+    writeCapeFile('3-abcd0002.png', buffer);
+    expect(writeFileSync).toHaveBeenCalledWith(
+      expect.stringMatching(/capes[/\\]3-abcd0002\.png$/),
+      buffer,
+    );
   });
 });
 
@@ -82,20 +104,6 @@ describe('storage — deleteFileIfExists', () => {
   });
 });
 
-describe('storage — deleteSkinFile / deleteCapeFile', () => {
-  it('deleteSkinFile removes the skin file when it exists', () => {
-    (existsSync as jest.Mock).mockReturnValue(true);
-    deleteSkinFile(10);
-    expect(rmSync).toHaveBeenCalledWith(expect.stringMatching(/skins[/\\]10\.png$/));
-  });
-
-  it('deleteCapeFile removes the cape file when it exists', () => {
-    (existsSync as jest.Mock).mockReturnValue(true);
-    deleteCapeFile(10);
-    expect(rmSync).toHaveBeenCalledWith(expect.stringMatching(/capes[/\\]10\.png$/));
-  });
-});
-
 describe('storage — readFileOrNull', () => {
   it('returns buffer when file exists', () => {
     const buffer = Buffer.from('data');
@@ -107,21 +115,5 @@ describe('storage — readFileOrNull', () => {
   it('returns null when file does not exist', () => {
     (existsSync as jest.Mock).mockReturnValue(false);
     expect(readFileOrNull('/missing.png')).toBeNull();
-  });
-});
-
-describe('storage — readSkinFile / readCapeFile', () => {
-  it('readSkinFile reads from the skins directory', () => {
-    const buffer = Buffer.from('skin-bytes');
-    (existsSync as jest.Mock).mockReturnValue(true);
-    (readFileSync as jest.Mock).mockReturnValue(buffer);
-    const result = readSkinFile(2);
-    expect(result).toBe(buffer);
-    expect(readFileSync).toHaveBeenCalledWith(expect.stringMatching(/skins[/\\]2\.png$/));
-  });
-
-  it('readCapeFile returns null when file is missing', () => {
-    (existsSync as jest.Mock).mockReturnValue(false);
-    expect(readCapeFile(2)).toBeNull();
   });
 });
