@@ -9,7 +9,7 @@ import {
 import { useTheme } from 'styled-components';
 import { useNotification } from '@strapi/strapi/admin';
 import { UploadIcon, FileIcon } from '../../../../components/Icons';
-import { uploadFile } from '../../../../api/builds';
+import { useBuildsApi } from '../../../../api/builds';
 import { formatBytes } from '../../../../utils/formatBytes';
 import { useTranslate } from '../../../../hooks/useTranslate';
 import {
@@ -35,6 +35,7 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toggleNotification } = useNotification();
   const translate = useTranslate();
+  const buildsApi = useBuildsApi();
 
   const [file, setFile] = useState<File | null>(null);
   const [targetPath, setTargetPath] = useState(initialPath || '');
@@ -66,7 +67,7 @@ const AddFileModal = ({ slug, initialPath, onClose, onSuccess }: AddFileModalPro
     }
     setUploading(true);
     try {
-      await uploadFile(slug, file, targetPath.trim());
+      await buildsApi.uploadFile(slug, file, targetPath.trim());
       onSuccess(translate('modal.addFile.toast.success'));
       onClose();
     } catch (err) {

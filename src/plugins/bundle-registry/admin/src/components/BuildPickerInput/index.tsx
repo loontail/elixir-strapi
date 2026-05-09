@@ -5,7 +5,7 @@ import {
   Field,
   Loader,
 } from '@strapi/design-system';
-import { buildsApi } from '../../api/builds';
+import { useBuildsApi } from '../../api/builds';
 import { useTranslate } from '../../hooks/useTranslate';
 import type { Build } from '../../../../shared/types/entities';
 
@@ -37,6 +37,7 @@ const BuildPickerInput = ({
   const [builds, setBuilds] = useState<Build[]>([]);
   const [loading, setLoading] = useState(true);
   const translate = useTranslate();
+  const buildsApi = useBuildsApi();
 
   useEffect(() => {
     buildsApi
@@ -44,7 +45,7 @@ const BuildPickerInput = ({
       .then((data) => setBuilds(Array.isArray(data) ? data : []))
       .catch(() => setBuilds([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [buildsApi]);
 
   const selectedSlug = value ?? '';
 

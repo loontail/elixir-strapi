@@ -1,6 +1,6 @@
 ﻿import { useCallback } from 'react';
 import { useNotification } from '@strapi/strapi/admin';
-import { buildsApi, uploadArchive as uploadArchiveApi } from '../../../api/builds';
+import { useBuildsApi } from '../../../api/builds';
 import { useTranslate } from '../../../hooks/useTranslate';
 import type { Artifact } from '../../../../../shared/types/entities';
 import type { ValidateResult } from '../../../../../shared/types/api';
@@ -47,6 +47,7 @@ const useFileOperations = ({
 }: UseFileOperationsOptions): UseFileOperationsResult => {
   const { toggleNotification } = useNotification();
   const translate = useTranslate();
+  const buildsApi = useBuildsApi();
 
   const notify = useCallback(
     (type: 'success' | 'warning', message: string) => toggleNotification({ type, message }),
@@ -57,7 +58,7 @@ const useFileOperations = ({
     async (file: File) => {
       setUploading(true);
       try {
-        await uploadArchiveApi(slug, file);
+        await buildsApi.uploadArchive(slug, file);
         notify('success', translate('buildDetail.toast.archive.success'));
         load();
       } catch (err) {
@@ -66,7 +67,7 @@ const useFileOperations = ({
         setUploading(false);
       }
     },
-    [slug, load, setUploading, notify, translate],
+    [buildsApi, slug, load, setUploading, notify, translate],
   );
 
   const handleRegenerate = useCallback(async () => {
@@ -80,7 +81,7 @@ const useFileOperations = ({
     } finally {
       setRegenerating(false);
     }
-  }, [slug, load, setRegenerating, notify, translate]);
+  }, [buildsApi, slug, load, setRegenerating, notify, translate]);
 
   const handleValidate = useCallback(async () => {
     setValidating(true);
@@ -102,7 +103,7 @@ const useFileOperations = ({
     } finally {
       setValidating(false);
     }
-  }, [slug, setValidating, setValidation, notify, translate]);
+  }, [buildsApi, slug, setValidating, setValidation, notify, translate]);
 
   const handleRemoveMissing = useCallback(async () => {
     if (!validation?.missing?.length) return;
@@ -117,7 +118,7 @@ const useFileOperations = ({
     } catch (err) {
       notify('warning', (err as Error).message);
     }
-  }, [slug, validation, load, setValidation, notify, translate]);
+  }, [buildsApi, slug, validation, load, setValidation, notify, translate]);
 
 
   const handleToggleDownloadOnce = useCallback(
@@ -129,7 +130,7 @@ const useFileOperations = ({
         notify('warning', (err as Error).message);
       }
     },
-    [slug, load, notify],
+    [buildsApi, slug, load, notify],
   );
 
   const handleRehash = useCallback(
@@ -142,7 +143,7 @@ const useFileOperations = ({
         notify('warning', (err as Error).message);
       }
     },
-    [slug, load, notify, translate],
+    [buildsApi, slug, load, notify, translate],
   );
 
   const handleMove = useCallback(
@@ -155,7 +156,7 @@ const useFileOperations = ({
         notify('warning', (err as Error).message);
       }
     },
-    [slug, load, notify, translate],
+    [buildsApi, slug, load, notify, translate],
   );
 
   const handleContextAction = useCallback(

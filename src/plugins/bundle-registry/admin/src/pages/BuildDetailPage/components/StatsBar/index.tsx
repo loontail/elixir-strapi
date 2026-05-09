@@ -3,7 +3,7 @@ import { Typography } from '@strapi/design-system';
 import StatusBadge from '../../../../components/StatusBadge';
 import { formatBytes } from '../../../../utils/formatBytes';
 import { useTranslate } from '../../../../hooks/useTranslate';
-import { buildsApi } from '../../../../api/builds';
+import { useBuildsApi } from '../../../../api/builds';
 import type { Build } from '../../../../../../shared/types/entities';
 import { StatsBarRow, StatCard, StatLabel } from './styles';
 
@@ -13,11 +13,12 @@ interface StatsBarProps {
 
 const StatsBar = memo(function StatsBar({ build }: StatsBarProps) {
   const translate = useTranslate();
+  const buildsApi = useBuildsApi();
 
   const [diskFree, setDiskFree] = useState<number | null>(null);
   useEffect(() => {
     buildsApi.diskSpace().then((r) => setDiskFree(r.free)).catch(() => {});
-  }, []);
+  }, [buildsApi]);
 
   return (
     <StatsBarRow>

@@ -18,7 +18,7 @@ import { Plus, Trash } from '@strapi/icons';
 import { useNotification, Layouts } from '@strapi/strapi/admin';
 import { FormattedMessage } from 'react-intl';
 import pluginId from '../../pluginId';
-import { buildsApi } from '../../api/builds';
+import { useBuildsApi } from '../../api/builds';
 import StatusBadge from '../../components/StatusBadge';
 import { formatBytes } from '../../utils/formatBytes';
 import { getTranslation } from '../../utils/getTranslation';
@@ -34,6 +34,7 @@ const BuildListPage = () => {
   const navigate = useNavigate();
   const { toggleNotification } = useNotification();
   const translate = useTranslate();
+  const buildsApi = useBuildsApi();
 
   const load = useCallback(() => {
     setLoading(true);
@@ -42,7 +43,7 @@ const BuildListPage = () => {
       .then((data) => setBuilds(Array.isArray(data) ? data : []))
       .catch((err: Error) => toggleNotification({ type: 'warning', message: err.message }))
       .finally(() => setLoading(false));
-  }, [toggleNotification]);
+  }, [buildsApi, toggleNotification]);
 
   useEffect(() => {
     load();

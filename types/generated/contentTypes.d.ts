@@ -585,18 +585,27 @@ export interface ApiMinecraftMinecraft extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    forge: Schema.Attribute.String &
+    loader: Schema.Attribute.Enumeration<['Vanilla', 'Forge', 'Fabric']> &
+      Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
         };
-      }>;
+      }> &
+      Schema.Attribute.DefaultTo<'Vanilla'>;
     locale: Schema.Attribute.String;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::minecraft.minecraft'
     >;
     publishedAt: Schema.Attribute.DateTime;
+    runtimeSlug: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::bundle-registry.build-picker'> &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     title: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{

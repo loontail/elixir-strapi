@@ -5,7 +5,7 @@ import {
   Typography,
 } from '@strapi/design-system';
 import { useNotification } from '@strapi/strapi/admin';
-import { buildsApi } from '../../../../api/builds';
+import { useBuildsApi } from '../../../../api/builds';
 import { useTranslate } from '../../../../hooks/useTranslate';
 import { FolderIcon } from '../../../../components/Icons';
 import { DirList, DirItem, MovingLabel } from './styles';
@@ -22,6 +22,7 @@ interface MoveModalProps {
 const MoveModal = ({ entry, dirs, slug, onClose, onSuccess }: MoveModalProps) => {
   const { toggleNotification } = useNotification();
   const translate = useTranslate();
+  const buildsApi = useBuildsApi();
 
   const currentParent = entry.relativePath.includes('/')
     ? entry.relativePath.substring(0, entry.relativePath.lastIndexOf('/'))

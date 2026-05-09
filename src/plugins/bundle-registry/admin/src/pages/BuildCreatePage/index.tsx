@@ -10,7 +10,7 @@ import {
 import { ArrowLeft, Check } from '@strapi/icons';
 import { useNotification, Layouts } from '@strapi/strapi/admin';
 import pluginId from '../../pluginId';
-import { buildsApi } from '../../api/builds';
+import { useBuildsApi } from '../../api/builds';
 import { useTranslate } from '../../hooks/useTranslate';
 
 interface BuildForm {
@@ -32,6 +32,7 @@ const BuildCreatePage = () => {
   const navigate = useNavigate();
   const { toggleNotification } = useNotification();
   const translate = useTranslate();
+  const buildsApi = useBuildsApi();
   const [form, setForm] = useState<BuildForm>({ name: '', slug: '', description: '', version: '' });
   const [submitting, setSubmitting] = useState(false);
 

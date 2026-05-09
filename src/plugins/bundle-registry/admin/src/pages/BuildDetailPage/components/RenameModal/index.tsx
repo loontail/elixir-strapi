@@ -6,7 +6,7 @@ import {
   TextInput,
 } from '@strapi/design-system';
 import { useNotification } from '@strapi/strapi/admin';
-import { buildsApi } from '../../../../api/builds';
+import { useBuildsApi } from '../../../../api/builds';
 import { useTranslate } from '../../../../hooks/useTranslate';
 import type { Artifact } from '../../../../../../shared/types/entities';
 
@@ -20,6 +20,7 @@ interface RenameModalProps {
 const RenameModal = ({ entry, slug, onClose, onSuccess }: RenameModalProps) => {
   const { toggleNotification } = useNotification();
   const translate = useTranslate();
+  const buildsApi = useBuildsApi();
 
   const parentDir = entry.relativePath.includes('/')
     ? entry.relativePath.substring(0, entry.relativePath.lastIndexOf('/'))

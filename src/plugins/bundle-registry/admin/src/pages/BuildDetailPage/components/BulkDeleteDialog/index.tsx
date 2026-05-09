@@ -6,7 +6,7 @@ import {
 } from '@strapi/design-system';
 import { useNotification } from '@strapi/strapi/admin';
 import { FormattedMessage } from 'react-intl';
-import { buildsApi } from '../../../../api/builds';
+import { useBuildsApi } from '../../../../api/builds';
 import { getTranslation } from '../../../../utils/getTranslation';
 import { useTranslate } from '../../../../hooks/useTranslate';
 
@@ -20,6 +20,7 @@ interface BulkDeleteDialogProps {
 const BulkDeleteDialog = ({ ids, slug, onClose, onSuccess }: BulkDeleteDialogProps) => {
   const { toggleNotification } = useNotification();
   const translate = useTranslate();
+  const buildsApi = useBuildsApi();
   const [deleting, setDeleting] = useState(false);
 
   const handleConfirm = async () => {

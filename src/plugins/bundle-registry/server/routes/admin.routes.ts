@@ -50,8 +50,8 @@ const adminRoutes = {
       config: { policies: [] },
     },
     {
-      method: 'PATCH',
-      path: '/builds/:slug/files/:entryId',
+      method: 'POST',
+      path: '/builds/:slug/files/:entryId/rename',
       handler: 'build.renameFile',
       config: { policies: [] },
     },

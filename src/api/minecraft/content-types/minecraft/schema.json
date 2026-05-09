@@ -17,32 +17,47 @@
   },
   "attributes": {
     "version": {
+      "type": "string",
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       },
-      "type": "string",
       "required": true
     },
     "title": {
+      "type": "string",
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       },
-      "type": "string",
-      "required": true,
-      "default": "Minecraft"
+      "default": "Minecraft",
+      "required": true
     },
-    "forge": {
+    "loader": {
+      "type": "enumeration",
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       },
-      "type": "string",
-      "required": false
+      "required": true,
+      "default": "Vanilla",
+      "enum": [
+        "Vanilla",
+        "Forge",
+        "Fabric"
+      ]
+    },
+    "runtimeSlug": {
+      "type": "customField",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "customField": "plugin::bundle-registry.build-picker"
     }
   }
 }

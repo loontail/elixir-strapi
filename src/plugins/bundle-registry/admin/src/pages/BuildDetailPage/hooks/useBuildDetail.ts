@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNotification } from '@strapi/strapi/admin';
-import { buildsApi } from '../../../api/builds';
+import { useBuildsApi } from '../../../api/builds';
 import type { Build } from '../../../../../shared/types/entities';
 import type { ValidateResult } from '../../../../../shared/types/api';
 
@@ -26,6 +26,7 @@ const useBuildDetail = (slug: string): UseBuildDetailResult => {
   const [validating, setValidating] = useState(false);
   const [validation, setValidation] = useState<ValidateResult | null>(null);
   const { toggleNotification } = useNotification();
+  const buildsApi = useBuildsApi();
 
   const load = useCallback(() => {
     setLoading(true);
@@ -34,7 +35,7 @@ const useBuildDetail = (slug: string): UseBuildDetailResult => {
       .then((data) => setBuild(data))
       .catch((err: Error) => toggleNotification({ type: 'warning', message: err.message }))
       .finally(() => setLoading(false));
-  }, [slug, toggleNotification]);
+  }, [buildsApi, slug, toggleNotification]);
 
   useEffect(() => {
     load();
