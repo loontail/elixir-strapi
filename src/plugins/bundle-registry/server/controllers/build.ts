@@ -19,24 +19,34 @@ import {
 import { extractZip } from '../services/archive';
 import { scanDirectory, computeFileSha256 } from '../services/scanner';
 import { generate as generateManifest } from '../services/manifest-generator';
+import { ARTIFACT_UID } from '../../shared/constants';
 import type { Build, Artifact } from '../../shared/types/entities';
 import type { StrapiInstance as Strapi, KoaContext, FormidableFile } from '../types';
 
-const ARTIFACT_UID = 'plugin::bundle-registry.artifact' as const;
 const STALE_PROCESSING_THRESHOLD_MS = 10 * 60 * 1000;
 const DEFAULT_MAX_ZIP_SIZE = 10 * 1024 * 1024 * 1024;
 const DEFAULT_MAX_ZIP_ENTRIES = 100_000;
 
 type EntryWithBuild = Artifact & { build?: { slug: string } };
 
+interface StatFsResult {
+  bfree: number;
+  bsize: number;
+  blocks: number;
+}
+
+interface FsWithStatfs {
+  statfsSync?: (path: string) => StatFsResult;
+}
+
 const getSystemDiskSpace = (): { free: number; total: number } | null => {
   try {
     // statfsSync is available since Node.js 19.6.0; returns null on older runtimes
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any
-    const nativeFs = require('fs') as any;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const nativeFs = require('fs') as FsWithStatfs;
     if (typeof nativeFs.statfsSync !== 'function') return null;
-    const s = nativeFs.statfsSync(process.cwd()) as { bfree: number; bsize: number; blocks: number };
-    return { free: s.bfree * s.bsize, total: s.blocks * s.bsize };
+    const stats = nativeFs.statfsSync(process.cwd());
+    return { free: stats.bfree * stats.bsize, total: stats.blocks * stats.bsize };
   } catch {
     return null;
   }

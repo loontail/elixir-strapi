@@ -2,7 +2,7 @@ import styled, { keyframes } from 'styled-components';
 
 // ─── Loading bar ──────────────────────────────────────────────────────────────
 
-export const LoadingBarAnimation = keyframes`
+const LoadingBarAnimation = keyframes`
   0%   { left: -60%; }
   100% { left: 110%; }
 `;

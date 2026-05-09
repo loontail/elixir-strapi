@@ -9,8 +9,11 @@ import { useBuildsApi } from '../../api/builds';
 import { useTranslate } from '../../hooks/useTranslate';
 import type { Build } from '../../../../shared/types/entities';
 
+// Strapi's custom-field renderer hands every input an `attribute` descriptor
+// (the schema's type metadata). It's part of the contract Strapi expects but
+// this component doesn't need it — Strapi's TS surface lacks a public type
+// for the prop bag, so we declare exactly the fields we read.
 interface BuildPickerInputProps {
-  attribute: { type: string };
   description?: { defaultMessage?: string } | null;
   disabled?: boolean;
   error?: string | null;
@@ -23,7 +26,6 @@ interface BuildPickerInputProps {
 }
 
 const BuildPickerInput = ({
-  attribute,
   description,
   disabled,
   error,

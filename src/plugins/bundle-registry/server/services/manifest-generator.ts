@@ -1,10 +1,10 @@
 ﻿import { join } from 'path';
 import { existsSync } from 'fs';
 
+import { ARTIFACT_UID, BUILD_UID } from '../../shared/constants';
 import type { Manifest, ManifestEntry } from '../../shared/types/api';
-import { getPublicUrl, writeManifestAtomic, getFilesPath } from './storage';
-
 import type { StrapiInstance } from '../types';
+import { getPublicUrl, writeManifestAtomic, getFilesPath } from './storage';
 
 const generate = async (buildSlug: string, strapi: StrapiInstance): Promise<Manifest> => {
   const artifacts: Array<{
@@ -16,7 +16,7 @@ const generate = async (buildSlug: string, strapi: StrapiInstance): Promise<Mani
     sha256?: string;
     downloadOnce: boolean;
     build?: { slug: string };
-  }> = await strapi.db.query('plugin::bundle-registry.artifact').findMany({
+  }> = await strapi.db.query(ARTIFACT_UID).findMany({
     where: { build: { slug: buildSlug } },
     populate: ['build'],
   });
@@ -67,11 +67,11 @@ const generate = async (buildSlug: string, strapi: StrapiInstance): Promise<Mani
   writeManifestAtomic(buildSlug, filteredGrouped);
 
   const builds: Array<{ id: number }> = await strapi.db
-    .query('plugin::bundle-registry.build')
+    .query(BUILD_UID)
     .findMany({ where: { slug: buildSlug }, limit: 1 });
 
   if (builds.length > 0) {
-    await strapi.db.query('plugin::bundle-registry.build').update({
+    await strapi.db.query(BUILD_UID).update({
       where: { id: builds[0].id },
       data: {
         status: 'ready',

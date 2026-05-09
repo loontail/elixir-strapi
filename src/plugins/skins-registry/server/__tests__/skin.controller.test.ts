@@ -374,6 +374,21 @@ describe('skinController.uploadSkin', () => {
 
     expect(ctx.badRequest).toHaveBeenCalledWith('File must be a PNG');
   });
+
+  it('calls badRequest when the PNG exceeds MAX_SKIN_UPLOAD_BYTES (256 KB)', async () => {
+    // 257 KB — one KB past the cap.
+    const oversized = Buffer.alloc(257 * 1024);
+    (readFileSync as jest.Mock).mockReturnValue(oversized);
+    const controller = skinController({ strapi: makeMockStrapi() as never });
+    const ctx = makeCtx({ userId: '1' }, {}, {}, { file: fakeFile });
+
+    await controller.uploadSkin(ctx);
+
+    expect(ctx.badRequest).toHaveBeenCalledWith(
+      expect.stringContaining('exceeds maximum size'),
+    );
+    expect(writeSkinFile).not.toHaveBeenCalled();
+  });
 });
 
 // ── uploadCape ────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-﻿import type { Artifact } from './entities';
+import type { Artifact } from './entities';
 
 export interface CreateBuildDto {
   name: string;
@@ -15,14 +15,6 @@ export interface UpdateBuildDto {
 
 export interface UpdateFileDto {
   downloadOnce: boolean;
-}
-
-export interface RenameFileDto {
-  newRelativePath: string;
-}
-
-export interface BulkDeleteDto {
-  ids: number[];
 }
 
 export interface ValidateResult {

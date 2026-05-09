@@ -11,13 +11,11 @@ import {
   getCapeFileUrl,
   deleteFileIfExists,
 } from '../services/storage';
+import { CAPE_UID, MAX_SKIN_UPLOAD_BYTES, SKIN_UID, type SkinsRegistryUid } from '../../shared/constants';
 import type { PlayerSkin, PlayerCape } from '../../shared/types/entities';
 
-const SKIN_UID = 'plugin::skins-registry.player-skin' as const;
-const CAPE_UID = 'plugin::skins-registry.player-cape' as const;
-
 type AssetKind = 'skin' | 'cape';
-type AssetUID = typeof SKIN_UID | typeof CAPE_UID;
+type AssetUID = SkinsRegistryUid;
 type AssetRecord = PlayerSkin | PlayerCape;
 
 const ASSET_HANDLERS = {
@@ -126,6 +124,9 @@ const handleMultipartUpload = async (
   if (file.mimetype !== 'image/png') return ctx.badRequest('File must be a PNG');
   const username = (ctx.request.body as Record<string, string>)?.username || undefined;
   const buffer = readFileSync(file.filepath);
+  if (buffer.length > MAX_SKIN_UPLOAD_BYTES) {
+    return ctx.badRequest(`File exceeds maximum size of ${MAX_SKIN_UPLOAD_BYTES} bytes`);
+  }
   ctx.body = await persistAsset(strapi, kind, userId, buffer, username);
 };
 
@@ -141,6 +142,9 @@ const handleAdminBase64Upload = async (
   if (!userId) return ctx.badRequest('userId required');
   if (!fileBase64) return ctx.badRequest('fileBase64 required');
   const buffer = Buffer.from(fileBase64, 'base64');
+  if (buffer.length > MAX_SKIN_UPLOAD_BYTES) {
+    return ctx.badRequest(`File exceeds maximum size of ${MAX_SKIN_UPLOAD_BYTES} bytes`);
+  }
   ctx.body = await persistAsset(strapi, kind, userId, buffer, username);
 };
 

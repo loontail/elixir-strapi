@@ -1,4 +1,4 @@
-export interface PluginConfig {
+interface PluginConfig {
   publicUrl: string;
   maxZipSize: number;
   maxZipEntries: number;

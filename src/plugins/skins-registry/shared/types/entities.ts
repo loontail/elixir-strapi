@@ -19,5 +19,3 @@ export interface PlayerCape {
   createdAt?: string;
   updatedAt?: string;
 }
-
-export type AssetType = 'skin' | 'cape';

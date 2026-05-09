@@ -1,26 +1,8 @@
 import styled from 'styled-components';
 
-// Column layout constants — shared with FileTreeRow/styles.ts for consistent widths
-export const COL = {
-  check: { width: 48, minWidth: 48, paddingLeft: 16, paddingRight: 8, flexShrink: 0 as const },
-  name: { flex: '1 1 0', minWidth: 180, overflow: 'hidden' as const },
-  size: {
-    width: 90,
-    minWidth: 80,
-    textAlign: 'right' as const,
-    paddingRight: 16,
-    flexShrink: 0 as const,
-  },
-  mod: { width: 140, minWidth: 120, paddingLeft: 16, flexShrink: 0 as const },
-  hash: { width: 160, minWidth: 140, paddingLeft: 16, flexShrink: 0 as const },
-  dl: { width: 120, minWidth: 100, paddingLeft: 12, flexShrink: 0 as const },
-  act: { width: 48, minWidth: 48, textAlign: 'center' as const, flexShrink: 0 as const },
-} as const;
-
 export const TableRoot = styled.div`
   width: 100%;
 `;
-
 
 export const HeaderRow = styled.div`
   display: flex;

@@ -1,10 +1,8 @@
-import type { StrapiInstance } from '../types';
+import { CAPE_UID, SKIN_UID, type SkinsRegistryUid } from '../../shared/constants';
 import type { PlayerSkin, PlayerCape } from '../../shared/types/entities';
+import type { StrapiInstance } from '../types';
 
-const SKIN_UID = 'plugin::skins-registry.player-skin' as const;
-const CAPE_UID = 'plugin::skins-registry.player-cape' as const;
-
-type AssetUID = typeof SKIN_UID | typeof CAPE_UID;
+type AssetUID = SkinsRegistryUid;
 type SkinData = { filePath: string; fileUrl: string; fileSize?: number; username?: string };
 type FindManyOpts = { page?: number; pageSize?: number; search?: string };
 type FindManyResult<T> = { data: T[]; total: number };
