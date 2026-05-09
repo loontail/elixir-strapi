@@ -535,7 +535,7 @@ export interface ApiKeywordKeyword extends Struct.CollectionTypeSchema {
     singularName: 'keyword';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   pluginOptions: {
     i18n: {
@@ -574,12 +574,7 @@ export interface ApiMinecraftMinecraft extends Struct.CollectionTypeSchema {
     singularName: 'minecraft';
   };
   options: {
-    draftAndPublish: true;
-  };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -587,43 +582,23 @@ export interface ApiMinecraftMinecraft extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     loader: Schema.Attribute.Enumeration<['Vanilla', 'Forge', 'Fabric']> &
       Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }> &
       Schema.Attribute.DefaultTo<'Vanilla'>;
-    locale: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::minecraft.minecraft'
-    >;
+    > &
+      Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     runtimeSlug: Schema.Attribute.String &
-      Schema.Attribute.CustomField<'plugin::bundle-registry.build-picker'> &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+      Schema.Attribute.CustomField<'plugin::bundle-registry.build-picker'>;
     title: Schema.Attribute.String &
       Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }> &
       Schema.Attribute.DefaultTo<'Minecraft'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    version: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    version: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
