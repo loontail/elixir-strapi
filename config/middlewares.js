@@ -19,5 +19,6 @@ module.exports = [
   },
   'strapi::session',
   'strapi::favicon',
+  'global::bundle-static',
   'strapi::public',
 ];
