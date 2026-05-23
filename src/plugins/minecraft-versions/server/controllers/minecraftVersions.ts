@@ -1,6 +1,4 @@
 import {
-  ApiEndpoints,
-  FetchHttpClient,
   MinecraftChannels,
   MinecraftKitError,
   asMinecraftVersionId,
@@ -26,32 +24,6 @@ const sendUpstreamError = (ctx: KoaContext, err: unknown): void => {
       details: { code },
     },
   };
-};
-
-// The kit doesn't currently expose a high-level API for the Fabric game-versions
-// endpoint (it only lists loaders), but the URL builder and HTTP client are
-// public. Use them directly so the picker can list Fabric-supported games.
-interface FabricGameVersionEntry {
-  readonly version: string;
-  readonly stable: boolean;
-}
-
-let fabricHttp: FetchHttpClient | null = null;
-const getFabricHttp = (): FetchHttpClient => {
-  if (!fabricHttp) fabricHttp = new FetchHttpClient();
-  return fabricHttp;
-};
-
-const fetchFabricGameVersions = async (): Promise<readonly FabricGameVersionEntry[]> => {
-  const res = await getFabricHttp().request(ApiEndpoints.fabric.gameVersions());
-  if (res.status >= 400) {
-    throw new MinecraftKitError(
-      'NETWORK_HTTP_ERROR',
-      `Fabric game-versions fetch failed (${res.status})`,
-      { context: { url: ApiEndpoints.fabric.gameVersions(), httpStatus: res.status } },
-    );
-  }
-  return res.json<readonly FabricGameVersionEntry[]>();
 };
 
 const minecraftVersionsController = (_: { strapi: StrapiInstance }) => ({
@@ -94,7 +66,7 @@ const minecraftVersionsController = (_: { strapi: StrapiInstance }) => ({
       const kit = getKit();
       const [loaderSummaries, gameVersions] = await Promise.all([
         kit.versions.fabric.list(),
-        fetchFabricGameVersions(),
+        kit.versions.fabric.gameVersions(),
       ]);
       ctx.body = {
         loaderVersions: loaderSummaries.map(({ version, stable }) => ({ version, stable })),
