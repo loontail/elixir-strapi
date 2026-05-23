@@ -3,6 +3,7 @@ import {
   FetchHttpClient,
   MinecraftChannels,
   MinecraftKitError,
+  asMinecraftVersionId,
 } from '@loontail/minecraft-kit';
 import { getKit } from '../services/kitContainer';
 
@@ -77,7 +78,9 @@ const minecraftVersionsController = (_: { strapi: StrapiInstance }) => ({
         ctx.body = { versions: [] };
         return;
       }
-      const builds = await getKit().versions.forge.list({ minecraftVersion: minecraftFilter });
+      const builds = await getKit().versions.forge.list({
+        minecraftVersion: asMinecraftVersionId(minecraftFilter),
+      });
       // The kit returns one summary per Forge build; project to bare version strings
       // (e.g. `47.2.0`) for the picker UI.
       ctx.body = { versions: builds.map((b) => b.forgeVersion) };
@@ -135,7 +138,9 @@ const minecraftVersionsController = (_: { strapi: StrapiInstance }) => ({
         return;
       }
       const kit = getKit();
-      const resolved = await kit.versions.minecraft.resolve({ version: minecraftFilter });
+      const resolved = await kit.versions.minecraft.resolve({
+        version: asMinecraftVersionId(minecraftFilter),
+      });
       const java = resolved.manifest.javaVersion;
       ctx.body = {
         component: java?.component ?? null,
