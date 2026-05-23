@@ -20,7 +20,6 @@ export type ModalState =
   | { type: 'add' }
   | { type: 'replace'; entry: Artifact }
   | { type: 'rename'; entry: Artifact }
-  | { type: 'move'; entry: Artifact }
   | { type: 'delete'; entry: Artifact }
   | { type: 'bulkDelete' };
 
@@ -54,34 +53,45 @@ const useFileOperations = ({
     [toggleNotification],
   );
 
-  const handleArchiveUpload = useCallback(
-    async (file: File) => {
-      setUploading(true);
+  // Common shape for action handlers: optional busy flag, optional success
+  // toast, reload-on-success, warn-toast on error. The validate/removeMissing
+  // flows have custom success branches and stay outside.
+  const runAction = useCallback(
+    async (
+      action: () => Promise<void>,
+      opts: { setBusy?: (b: boolean) => void; successMessage?: string },
+    ): Promise<void> => {
+      opts.setBusy?.(true);
       try {
-        await buildsApi.uploadArchive(slug, file);
-        notify('success', translate('buildDetail.toast.archive.success'));
+        await action();
+        if (opts.successMessage) notify('success', opts.successMessage);
         load();
       } catch (err) {
         notify('warning', (err as Error).message);
       } finally {
-        setUploading(false);
+        opts.setBusy?.(false);
       }
     },
-    [buildsApi, slug, load, setUploading, notify, translate],
+    [notify, load],
   );
 
-  const handleRegenerate = useCallback(async () => {
-    setRegenerating(true);
-    try {
-      await buildsApi.regenerate(slug);
-      notify('success', translate('buildDetail.toast.regenerate.success'));
-      load();
-    } catch (err) {
-      notify('warning', (err as Error).message);
-    } finally {
-      setRegenerating(false);
-    }
-  }, [buildsApi, slug, load, setRegenerating, notify, translate]);
+  const handleArchiveUpload = useCallback(
+    (file: File) =>
+      runAction(() => buildsApi.uploadArchive(slug, file), {
+        setBusy: setUploading,
+        successMessage: translate('buildDetail.toast.archive.success'),
+      }),
+    [buildsApi, slug, runAction, setUploading, translate],
+  );
+
+  const handleRegenerate = useCallback(
+    () =>
+      runAction(() => buildsApi.regenerate(slug), {
+        setBusy: setRegenerating,
+        successMessage: translate('buildDetail.toast.regenerate.success'),
+      }),
+    [buildsApi, slug, runAction, setRegenerating, translate],
+  );
 
   const handleValidate = useCallback(async () => {
     setValidating(true);
@@ -122,41 +132,28 @@ const useFileOperations = ({
 
 
   const handleToggleDownloadOnce = useCallback(
-    async (entry: Artifact) => {
-      try {
-        await buildsApi.updateFile(slug, entry.id, { downloadOnce: !entry.downloadOnce });
-        load();
-      } catch (err) {
-        notify('warning', (err as Error).message);
-      }
-    },
-    [buildsApi, slug, load, notify],
+    (entry: Artifact) =>
+      runAction(
+        () => buildsApi.updateFile(slug, entry.id, { downloadOnce: !entry.downloadOnce }),
+        {},
+      ),
+    [buildsApi, slug, runAction],
   );
 
   const handleRehash = useCallback(
-    async (entry: Artifact) => {
-      try {
-        await buildsApi.rehashFile(slug, entry.id);
-        notify('success', translate('buildDetail.toast.rehash.success', { name: entry.name }));
-        load();
-      } catch (err) {
-        notify('warning', (err as Error).message);
-      }
-    },
-    [buildsApi, slug, load, notify, translate],
+    (entry: Artifact) =>
+      runAction(() => buildsApi.rehashFile(slug, entry.id), {
+        successMessage: translate('buildDetail.toast.rehash.success', { name: entry.name }),
+      }),
+    [buildsApi, slug, runAction, translate],
   );
 
   const handleMove = useCallback(
-    async (entry: Artifact, newPath: string) => {
-      try {
-        await buildsApi.renameFile(slug, entry.id, newPath);
-        notify('success', translate('modal.move.toast.success', { path: newPath }));
-        load();
-      } catch (err) {
-        notify('warning', (err as Error).message);
-      }
-    },
-    [buildsApi, slug, load, notify, translate],
+    (entry: Artifact, newPath: string) =>
+      runAction(() => buildsApi.renameFile(slug, entry.id, newPath), {
+        successMessage: translate('modal.move.toast.success', { path: newPath }),
+      }),
+    [buildsApi, slug, runAction, translate],
   );
 
   const handleContextAction = useCallback(

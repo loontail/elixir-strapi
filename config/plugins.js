@@ -3,6 +3,10 @@ module.exports = ({ env }) => ({
     enabled: true,
     resolve: './src/plugins/skins-registry',
   },
+  'minecraft-versions': {
+    enabled: true,
+    resolve: './src/plugins/minecraft-versions',
+  },
   'bundle-registry': {
     enabled: true,
     resolve: './src/plugins/bundle-registry',

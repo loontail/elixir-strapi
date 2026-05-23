@@ -92,7 +92,7 @@ export const SizeCell = styled.div`
   font-variant-numeric: tabular-nums;
 `;
 
-export const ModCell = styled.div`
+export const ModifiedCell = styled.div`
   width: 140px;
   min-width: 120px;
   padding-left: 16px;
@@ -110,14 +110,14 @@ export const HashCell = styled.div`
   flex-shrink: 0;
 `;
 
-export const DlCell = styled.div`
+export const DownloadCell = styled.div`
   width: 120px;
   min-width: 100px;
   padding-left: 12px;
   flex-shrink: 0;
 `;
 
-export const ActCell = styled.div`
+export const ActionCell = styled.div`
   width: 48px;
   min-width: 48px;
   text-align: center;

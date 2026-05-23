@@ -48,7 +48,6 @@ const makeBuildService = () => ({
   update: jest.fn(),
   delete: jest.fn(),
   deleteFileEntries: jest.fn().mockResolvedValue(undefined),
-  createFileEntries: jest.fn().mockResolvedValue(undefined),
   upsertFileEntries: jest.fn().mockResolvedValue(undefined),
 });
 

@@ -12,10 +12,10 @@ import {
   CheckCell,
   NameCell,
   SizeCell,
-  ModCell,
+  ModifiedCell,
   HashCell,
-  DlCell,
-  ActCell,
+  DownloadCell,
+  ActionCell,
   EmptyCell,
   GuideSpine,
   GuideHorizontal,
@@ -164,7 +164,7 @@ const FileTreeRow = memo(function FileTreeRow({
           <DirCount>{dirIds.length}</DirCount>
         </NameCell>
         <EmptyCell style={undefined} /><EmptyCell style={undefined} /><EmptyCell style={undefined} /><EmptyCell style={undefined} />
-        <ActCell>
+        <ActionCell>
           {node.entry && (
             <SimpleMenu label={translate('buildDetail.folderActions')} tag={IconButton} icon={<More />}>
               <MenuItem onClick={() => onContextAction('rename', node.entry!)}>
@@ -175,7 +175,7 @@ const FileTreeRow = memo(function FileTreeRow({
               </MenuItem>
             </SimpleMenu>
           )}
-        </ActCell>
+        </ActionCell>
       </DirRow>
     );
   }
@@ -219,7 +219,7 @@ const FileTreeRow = memo(function FileTreeRow({
         </FileNameOverflow>
       </NameCell>
       <SizeCell>{formatBytes(entry.size)}</SizeCell>
-      <ModCell>{formatDate(entry.fileModifiedAt)}</ModCell>
+      <ModifiedCell>{formatDate(entry.fileModifiedAt)}</ModifiedCell>
       <HashCell>
         {entry.sha256 ? (
           <HashChip
@@ -232,7 +232,7 @@ const FileTreeRow = memo(function FileTreeRow({
           <Typography variant="omega" textColor="neutral400">{'—'}</Typography>
         )}
       </HashCell>
-      <DlCell>
+      <DownloadCell>
         <ToggleButton
           type="button"
           aria-label={translate('buildDetail.downloadOnce.label', {
@@ -244,8 +244,8 @@ const FileTreeRow = memo(function FileTreeRow({
             <ToggleThumb $active={entry.downloadOnce} />
           </ToggleTrack>
         </ToggleButton>
-      </DlCell>
-      <ActCell>
+      </DownloadCell>
+      <ActionCell>
         <SimpleMenu label={translate('buildDetail.fileActions')} tag={IconButton} icon={<More />}>
           <MenuItem onClick={() => onContextAction('rename', entry)}>
             <MenuItemRow><PencilIcon />{translate('buildDetail.action.rename')}</MenuItemRow>
@@ -260,7 +260,7 @@ const FileTreeRow = memo(function FileTreeRow({
             <MenuItemRow><TrashIcon /><DangerLabel>{translate('buildDetail.action.delete')}</DangerLabel></MenuItemRow>
           </MenuItem>
         </SimpleMenu>
-      </ActCell>
+      </ActionCell>
     </FileRow>
   );
 });

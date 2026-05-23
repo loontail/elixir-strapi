@@ -56,6 +56,6 @@ run_strapi:
   stage: run
   script:
       - cd /var/www/strapi
-      - sudo systemctl restart elixir-strapi.service
+      - sudo systemctl restart launcher-strapi.service
   only:
       - main

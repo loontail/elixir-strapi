@@ -466,7 +466,7 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
       Schema.Attribute.CustomField<'plugin::bundle-registry.build-picker'> &
       Schema.Attribute.SetPluginOptions<{
         i18n: {
-          localized: true;
+          localized: false;
         };
       }>;
     createdAt: Schema.Attribute.DateTime;
@@ -478,13 +478,16 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
           localized: true;
         };
       }>;
+    fabricVersion: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::minecraft-versions.fabric-version-picker'>;
+    forgeVersion: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::minecraft-versions.forge-version-picker'>;
     keywords: Schema.Attribute.Relation<'oneToMany', 'api::keyword.keyword'>;
     locale: Schema.Attribute.String;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::client.client'>;
-    minecraftVersion: Schema.Attribute.Relation<
-      'oneToOne',
-      'api::minecraft.minecraft'
-    >;
+    minecraftVersion: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.CustomField<'plugin::minecraft-versions.minecraft-version-picker'>;
     poster: Schema.Attribute.Media<'images'> &
       Schema.Attribute.Required &
       Schema.Attribute.SetPluginOptions<{
@@ -493,6 +496,8 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
         };
       }>;
     publishedAt: Schema.Attribute.DateTime;
+    runtimeVersion: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::minecraft-versions.runtime-version-picker'>;
     screenshots: Schema.Attribute.Media<'images', true> &
       Schema.Attribute.SetPluginOptions<{
         i18n: {
@@ -505,6 +510,12 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
+        };
+      }>;
+    slug: Schema.Attribute.UID<'title'> &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
         };
       }>;
     title: Schema.Attribute.String &
@@ -562,43 +573,6 @@ export interface ApiKeywordKeyword extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-  };
-}
-
-export interface ApiMinecraftMinecraft extends Struct.CollectionTypeSchema {
-  collectionName: 'minecrafts';
-  info: {
-    description: '';
-    displayName: 'Minecraft';
-    pluralName: 'minecrafts';
-    singularName: 'minecraft';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    loader: Schema.Attribute.Enumeration<['Vanilla', 'Forge', 'Fabric']> &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'Vanilla'>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::minecraft.minecraft'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    runtimeSlug: Schema.Attribute.String &
-      Schema.Attribute.CustomField<'plugin::bundle-registry.build-picker'>;
-    title: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'Minecraft'>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    version: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -1334,7 +1308,6 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::client.client': ApiClientClient;
       'api::keyword.keyword': ApiKeywordKeyword;
-      'api::minecraft.minecraft': ApiMinecraftMinecraft;
       'api::server.server': ApiServerServer;
       'plugin::bundle-registry.artifact': PluginBundleRegistryArtifact;
       'plugin::bundle-registry.build': PluginBundleRegistryBuild;

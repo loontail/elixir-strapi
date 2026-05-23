@@ -5,6 +5,7 @@
 import strapiCloud from "@strapi/plugin-cloud/strapi-admin";
 import usersPermissions from "@strapi/plugin-users-permissions/strapi-admin";
 import skinsRegistry from "../../src/plugins/skins-registry/./admin/src/index.ts";
+import minecraftVersions from "../../src/plugins/minecraft-versions/strapi-admin";
 import bundleRegistry from "../../src/plugins/bundle-registry/strapi-admin";
 import { renderAdmin } from "@strapi/strapi/admin";
 
@@ -13,6 +14,7 @@ renderAdmin(document.getElementById("strapi"), {
     "strapi-cloud": strapiCloud,
     "users-permissions": usersPermissions,
     "skins-registry": skinsRegistry,
+    "minecraft-versions": minecraftVersions,
     "bundle-registry": bundleRegistry,
   },
 });

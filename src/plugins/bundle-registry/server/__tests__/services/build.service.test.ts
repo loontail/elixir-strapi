@@ -131,67 +131,6 @@ describe('buildService.deleteFileEntries', () => {
   });
 });
 
-describe('buildService.createFileEntries', () => {
-  test('creates an entry for each scan result', async () => {
-    const { strapi, query } = makeStrapi();
-    query.create.mockResolvedValue({});
-
-    const service = buildService({ strapi } as never);
-    const entries = [
-      {
-        relativePath: 'mods/a.jar',
-        name: 'a.jar',
-        category: 'mods',
-        size: 100,
-        sha256: 'aaa',
-        isDir: false,
-        fileModifiedAt: '2024-01-01T00:00:00.000Z',
-      },
-      {
-        relativePath: 'mods/b.jar',
-        name: 'b.jar',
-        category: 'mods',
-        size: 200,
-        sha256: 'bbb',
-        isDir: false,
-        fileModifiedAt: undefined,
-      },
-    ];
-    await service.createFileEntries(1, entries);
-
-    expect(query.create).toHaveBeenCalledTimes(2);
-  });
-
-  test('creates no entries for empty array', async () => {
-    const { strapi, query } = makeStrapi();
-    const service = buildService({ strapi } as never);
-    await service.createFileEntries(1, []);
-    expect(query.create).not.toHaveBeenCalled();
-  });
-
-  test('stores null sha256 when entry sha256 is undefined', async () => {
-    const { strapi, query } = makeStrapi();
-    query.create.mockResolvedValue({});
-
-    const service = buildService({ strapi } as never);
-    await service.createFileEntries(1, [
-      {
-        relativePath: 'mods/a.jar',
-        name: 'a.jar',
-        category: 'mods',
-        size: 100,
-        sha256: undefined,
-        isDir: false,
-        fileModifiedAt: undefined,
-      },
-    ]);
-
-    expect(query.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ sha256: null }) }),
-    );
-  });
-});
-
 describe('buildService.upsertFileEntries', () => {
   test('updates existing entries and creates new ones', async () => {
     const { strapi, query } = makeStrapi();

@@ -43,24 +43,6 @@ const buildService = ({ strapi }: { strapi: StrapiInstance }) => ({
     });
   },
 
-  async createFileEntries(buildId: number, scanResults: ScanEntry[]): Promise<void> {
-    for (const entry of scanResults) {
-      await strapi.db.query(ARTIFACT_UID).create({
-        data: {
-          build: buildId,
-          relativePath: entry.relativePath,
-          name: entry.name,
-          category: entry.category,
-          size: entry.size,
-          sha256: entry.sha256 ?? null,
-          isDir: entry.isDir,
-          downloadOnce: false,
-          fileModifiedAt: entry.fileModifiedAt ?? null,
-        },
-      });
-    }
-  },
-
   async upsertFileEntries(buildId: number, scanResults: ScanEntry[]): Promise<void> {
     const existing: Array<{ id: number; relativePath: string }> = await strapi.db
       .query(ARTIFACT_UID)

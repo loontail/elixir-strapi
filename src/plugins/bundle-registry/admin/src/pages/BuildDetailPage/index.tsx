@@ -185,7 +185,7 @@ const BuildDetailPage = () => {
 
       <Layouts.Header
         title={build.name}
-        subtitle={`${build.slug}${build.version ? ` Â· v${build.version}` : ''}`}
+        subtitle={`${build.slug}${build.version ? ` · v${build.version}` : ''}`}
         navigationAction={
           <Box display="inline-flex">
             <Button
@@ -277,7 +277,7 @@ const BuildDetailPage = () => {
                   />
                   {search && (
                     <SearchClearButton type="button" onClick={() => setSearch('')}>
-                      Ã—
+                      ×
                     </SearchClearButton>
                   )}
                 </SearchWrapper>

@@ -1,8 +1,10 @@
 import { memo, useState } from 'react';
 import { Box, Typography } from '@strapi/design-system';
+import { useTheme } from 'styled-components';
 import { useTranslate } from '../../hooks/useTranslate';
 import SkinPreview2D from '../../components/SkinPreview2D';
 import SkinDetailModal from './SkinDetailModal';
+import { formatBytes } from '../../utils/formatBytes';
 import type { PlayerSkin, PlayerCape } from '../../../../shared/types/entities';
 
 type Entry = PlayerSkin | PlayerCape;
@@ -17,15 +19,9 @@ interface Props {
   onDelete: (id: number) => Promise<void>;
 }
 
-const formatBytes = (bytes?: number): string => {
-  if (!bytes) return '—';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-};
-
 const SkinCard = memo(function SkinCard({ entry, type, serverUrl, isMissing, onDeleted, onDelete }: Props) {
   const translate = useTranslate();
+  const theme = useTheme();
   const [open, setOpen] = useState(false);
 
   const fileUrl = entry.fileUrl.startsWith('http') ? entry.fileUrl : `${serverUrl}${entry.fileUrl}`;
@@ -34,6 +30,10 @@ const SkinCard = memo(function SkinCard({ entry, type, serverUrl, isMissing, onD
   const capeUrl = type === 'cape' ? fileUrl : undefined;
 
   const displayName = entry.username ?? translate('card.userFallback', { userId: entry.userId });
+  const dangerColor = theme.colors.danger600;
+  const dangerHoverColor = theme.colors.danger500;
+  const primaryColor = theme.colors.primary600;
+  const onDangerColor = theme.colors.neutral0;
 
   return (
     <>
@@ -50,14 +50,14 @@ const SkinCard = memo(function SkinCard({ entry, type, serverUrl, isMissing, onD
           gap: 12,
           cursor: 'pointer',
           position: 'relative',
-          ...(isMissing && { border: '1px solid #d02b20' }),
+          ...(isMissing && { border: `1px solid ${dangerColor}` }),
           transition: 'border-color 0.15s',
         }}
         onMouseEnter={(event: React.MouseEvent<HTMLDivElement>) => {
-          (event.currentTarget as HTMLDivElement).style.borderColor = isMissing ? '#ee5e52' : '#4945ff';
+          (event.currentTarget as HTMLDivElement).style.borderColor = isMissing ? dangerHoverColor : primaryColor;
         }}
         onMouseLeave={(event: React.MouseEvent<HTMLDivElement>) => {
-          (event.currentTarget as HTMLDivElement).style.borderColor = isMissing ? '#d02b20' : '';
+          (event.currentTarget as HTMLDivElement).style.borderColor = isMissing ? dangerColor : '';
         }}
       >
         {isMissing && (
@@ -66,8 +66,8 @@ const SkinCard = memo(function SkinCard({ entry, type, serverUrl, isMissing, onD
               position: 'absolute',
               top: 6,
               right: 6,
-              background: '#d02b20',
-              color: '#fff',
+              background: dangerColor,
+              color: onDangerColor,
               fontSize: 10,
               fontWeight: 600,
               padding: '2px 6px',

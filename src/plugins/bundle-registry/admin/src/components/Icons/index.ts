@@ -7,4 +7,3 @@ export { FolderOpenIcon } from './FolderOpenIcon';
 export { FileIcon } from './FileIcon';
 export { ChevronRightIcon } from './ChevronRightIcon';
 export { ChevronDownIcon } from './ChevronDownIcon';
-export { MoveIcon } from './MoveIcon';

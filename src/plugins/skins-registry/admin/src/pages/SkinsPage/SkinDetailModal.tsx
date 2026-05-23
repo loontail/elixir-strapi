@@ -3,6 +3,7 @@ import { Modal, Box, Button, Typography, Flex } from '@strapi/design-system';
 import { Trash } from '@strapi/icons';
 import { useTranslate } from '../../hooks/useTranslate';
 import SkinViewer3D from '../../components/SkinViewer3D';
+import { formatBytes } from '../../utils/formatBytes';
 import type { PlayerSkin, PlayerCape } from '../../../../shared/types/entities';
 
 type Entry = PlayerSkin | PlayerCape;
@@ -16,13 +17,6 @@ interface Props {
   onDelete: (id: number) => Promise<void>;
   onClose: () => void;
 }
-
-const formatBytes = (bytes?: number): string => {
-  if (!bytes) return '—';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-};
 
 interface FieldProps {
   label: string;

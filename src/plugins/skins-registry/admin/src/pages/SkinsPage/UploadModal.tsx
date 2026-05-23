@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Modal, Box, Button, Typography, TextInput, Flex } from '@strapi/design-system';
+import { useTheme } from 'styled-components';
 import { useTranslate } from '../../hooks/useTranslate';
 import SkinViewer3D from '../../components/SkinViewer3D';
 import { skinsApi } from '../../api/skinsApi';
@@ -22,6 +23,7 @@ interface DropZoneProps {
 
 const DropZone = ({ label, hint, file, onFile }: DropZoneProps) => {
   const translate = useTranslate();
+  const theme = useTheme();
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,12 +32,16 @@ const DropZone = ({ label, hint, file, onFile }: DropZoneProps) => {
   };
 
   const isFilled = !!file;
-  const borderColor = dragOver ? '#4945ff' : isFilled ? '#328048' : '#4a4a6a';
-  const backgroundColor = dragOver
-    ? 'rgba(73,69,255,0.08)'
+  const borderColor = dragOver
+    ? theme.colors.primary600
     : isFilled
-      ? 'rgba(50,128,72,0.08)'
-      : 'rgba(255,255,255,0.03)';
+      ? theme.colors.success600
+      : theme.colors.neutral400;
+  const backgroundColor = dragOver
+    ? theme.colors.primary100
+    : isFilled
+      ? theme.colors.success100
+      : theme.colors.neutral100;
 
   return (
     <Box style={{ flex: 1, minWidth: 0 }}>

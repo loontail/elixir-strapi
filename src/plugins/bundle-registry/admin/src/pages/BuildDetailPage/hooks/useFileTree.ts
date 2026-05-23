@@ -91,7 +91,6 @@ interface UseFileTreeResult {
   expanded: Set<string>;
   selected: Set<number>;
   search: string;
-  allFileIds: number[];
   allSelected: boolean;
   someSelected: boolean;
   filteredFiles: Artifact[];
@@ -194,7 +193,6 @@ const useFileTree = (artifacts: Artifact[]): UseFileTreeResult => {
     expanded,
     selected,
     search,
-    allFileIds,
     allSelected,
     someSelected,
     filteredFiles,

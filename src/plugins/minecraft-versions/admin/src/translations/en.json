@@ -1,0 +1,36 @@
+{
+  "plugin.name": "Minecraft Versions",
+
+  "minecraft-version-picker.label": "Minecraft Version",
+  "minecraft-version-picker.description": "Select a Minecraft version",
+  "minecraft-version-picker.placeholder": "Select a Minecraft version...",
+  "minecraft-version-picker.clear": "Clear",
+  "minecraft-version-picker.loadError": "Failed to load Minecraft versions.",
+
+  "forge-version-picker.label": "Forge Version",
+  "forge-version-picker.description": "Select a Forge loader version (depends on Minecraft version)",
+  "forge-version-picker.placeholder": "Select a Forge version...",
+  "forge-version-picker.placeholder.requireMc": "Select Minecraft version first",
+  "forge-version-picker.empty": "No Forge versions available for the selected Minecraft version.",
+  "forge-version-picker.clear": "Clear",
+  "forge-version-picker.loadError": "Failed to load Forge versions.",
+
+  "fabric-version-picker.label": "Fabric Loader Version",
+  "fabric-version-picker.description": "Select a Fabric loader version (game version must be supported)",
+  "fabric-version-picker.placeholder": "Select a Fabric loader version...",
+  "fabric-version-picker.placeholder.requireMc": "Select Minecraft version first",
+  "fabric-version-picker.unsupported": "Fabric does not support the selected Minecraft version.",
+  "fabric-version-picker.clear": "Clear",
+  "fabric-version-picker.loadError": "Failed to load Fabric versions.",
+  "fabric-version-picker.stableSuffix": "stable",
+  "fabric-version-picker.unstableSuffix": "unstable",
+
+  "runtime-version-picker.label": "Java Runtime",
+  "runtime-version-picker.description": "Select the Mojang Java runtime component",
+  "runtime-version-picker.placeholder": "Select a Java runtime...",
+  "runtime-version-picker.clear": "Clear",
+  "runtime-version-picker.loadError": "Failed to load Java runtime catalog.",
+  "runtime-version-picker.unsupported": "(unavailable on this OS/arch)",
+  "runtime-version-picker.recommendedSuffix": "recommended",
+  "runtime-version-picker.recommendedHint": "Mojang recommends {component} ({java}) for Minecraft {minecraft}."
+}

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, rmSync } from 'fs';
 import {
   getSkinFilePath,
   getCapeFilePath,
@@ -10,7 +10,6 @@ import {
   writeSkinFile,
   writeCapeFile,
   deleteFileIfExists,
-  readFileOrNull,
 } from '../services/storage';
 
 jest.mock('fs', () => ({
@@ -18,7 +17,6 @@ jest.mock('fs', () => ({
   mkdirSync: jest.fn(),
   writeFileSync: jest.fn(),
   rmSync: jest.fn(),
-  readFileSync: jest.fn(),
 }));
 
 beforeEach(() => jest.clearAllMocks());
@@ -104,16 +102,3 @@ describe('storage — deleteFileIfExists', () => {
   });
 });
 
-describe('storage — readFileOrNull', () => {
-  it('returns buffer when file exists', () => {
-    const buffer = Buffer.from('data');
-    (existsSync as jest.Mock).mockReturnValue(true);
-    (readFileSync as jest.Mock).mockReturnValue(buffer);
-    expect(readFileOrNull('/some/path.png')).toBe(buffer);
-  });
-
-  it('returns null when file does not exist', () => {
-    (existsSync as jest.Mock).mockReturnValue(false);
-    expect(readFileOrNull('/missing.png')).toBeNull();
-  });
-});

@@ -1,5 +1,5 @@
 {
-  "name": "elixir-strapi",
+  "name": "@loontail/launcher-strapi",
   "private": true,
   "version": "0.1.1",
   "description": "A Strapi application",
@@ -10,6 +10,7 @@
     "strapi": "strapi"
   },
   "dependencies": {
+    "@loontail/minecraft-kit": "file:../minecraft-kit",
     "@strapi/plugin-cloud": "5.44.0",
     "@strapi/plugin-users-permissions": "5.44.0",
     "@strapi/strapi": "5.44.0",

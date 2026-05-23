@@ -1,5 +1,15 @@
 # 🚀 Getting started with Strapi
 
+## Recent changes
+
+- New `minecraft-versions` plugin (`src/plugins/minecraft-versions/`) — fetches and caches Minecraft / Forge / Fabric / Java-runtime version catalogs from official upstream sources and registers four custom fields backed by public content-API routes (`/api/minecraft-versions/{minecraft,forge,fabric,runtime}`).
+- The `Minecraft` content type has been removed (`src/api/minecraft/` is gone). The relation `Client.minecraftVersion -> api::minecraft.minecraft` is replaced by a plain string custom field.
+- `Client.minecraftVersion` is now a `customField` string (the new picker), not a relation. Three new optional version fields have been added on `Client`: `forgeVersion`, `fabricVersion`, `runtimeVersion`. None of the four are localized; they are global per Client (siblings of the localized fields).
+- `bundle-registry` is now intended only for mods, configs, resourcepacks, shaderpacks, and overrides. Minecraft game files and JRE files are no longer distributed via `bundle-registry`; they are obtained by the launcher directly from Mojang based on the new version fields.
+- A manual data migration is required to backfill the new fields on existing Client entries — see `src/plugins/minecraft-versions/README.md`.
+
+
+
 Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
 
 ### `develop`

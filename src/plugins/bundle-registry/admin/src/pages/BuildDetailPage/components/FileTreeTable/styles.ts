@@ -40,7 +40,7 @@ export const HeaderSizeCell = styled.div`
   flex-shrink: 0;
 `;
 
-export const HeaderModCell = styled.div`
+export const HeaderModifiedCell = styled.div`
   width: 140px;
   min-width: 120px;
   padding-left: 16px;
@@ -54,7 +54,7 @@ export const HeaderHashCell = styled.div`
   flex-shrink: 0;
 `;
 
-export const HeaderDlCell = styled.div`
+export const HeaderDownloadCell = styled.div`
   width: 120px;
   min-width: 100px;
   padding-left: 12px;
@@ -63,7 +63,7 @@ export const HeaderDlCell = styled.div`
   align-items: center;
 `;
 
-export const HeaderActCell = styled.div`
+export const HeaderActionCell = styled.div`
   width: 48px;
   min-width: 48px;
   flex-shrink: 0;

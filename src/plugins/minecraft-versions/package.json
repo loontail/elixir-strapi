@@ -1,0 +1,32 @@
+{
+  "name": "strapi-plugin-minecraft-versions",
+  "version": "0.1.0",
+  "description": "Fetch and cache Minecraft / Forge / Fabric / Java runtime version catalogs and expose them as Strapi custom fields",
+  "main": "strapi-server.js",
+  "strapi": {
+    "name": "minecraft-versions",
+    "description": "Provides Minecraft, Forge, Fabric and Java runtime version pickers as custom fields, sourced from official upstream catalogs",
+    "kind": "plugin",
+    "displayName": "Minecraft Versions"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^2.2.0",
+    "@strapi/icons": "^2.2.0",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0"
+  },
+  "author": {
+    "name": "elixir"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=22.x.x",
+    "npm": ">=6.0.0"
+  },
+  "license": "MIT"
+}

@@ -16,6 +16,15 @@
     }
   },
   "attributes": {
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
+    },
     "title": {
       "type": "string",
       "pluginOptions": {
@@ -98,9 +107,21 @@
       "default": false
     },
     "minecraftVersion": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::minecraft.minecraft"
+      "type": "customField",
+      "customField": "plugin::minecraft-versions.minecraft-version-picker",
+      "required": true
+    },
+    "forgeVersion": {
+      "type": "customField",
+      "customField": "plugin::minecraft-versions.forge-version-picker"
+    },
+    "fabricVersion": {
+      "type": "customField",
+      "customField": "plugin::minecraft-versions.fabric-version-picker"
+    },
+    "runtimeVersion": {
+      "type": "customField",
+      "customField": "plugin::minecraft-versions.runtime-version-picker"
     },
     "titleImage": {
       "type": "media",
@@ -119,7 +140,7 @@
       "type": "customField",
       "pluginOptions": {
         "i18n": {
-          "localized": true
+          "localized": false
         }
       },
       "customField": "plugin::bundle-registry.build-picker"

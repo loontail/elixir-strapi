@@ -38,13 +38,6 @@ const deleteBuildFiles = (slug: string): void => {
   }
 };
 
-const deleteFilesDir = (slug: string): void => {
-  const filesPath = getFilesPath(slug);
-  if (existsSync(filesPath)) {
-    rmSync(filesPath, { recursive: true, force: true });
-  }
-};
-
 // Zip-slip guard: verify resolved path stays within the expected base directory
 const isPathSafe = (resolvedPath: string, baseDir: string): boolean => {
   const normalizedBase = normalize(baseDir) + sep;
@@ -67,6 +60,5 @@ export {
   ensureBuildDir,
   writeManifestAtomic,
   deleteBuildFiles,
-  deleteFilesDir,
   isPathSafe,
 };

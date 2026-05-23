@@ -9,7 +9,6 @@ import {
   ensureBuildDir,
   writeManifestAtomic,
   deleteBuildFiles,
-  deleteFilesDir,
   isPathSafe,
 } from '../../services/storage';
 
@@ -141,19 +140,3 @@ describe('deleteBuildFiles', () => {
   });
 });
 
-describe('deleteFilesDir', () => {
-  test('calls rmSync when files dir exists', () => {
-    (existsSync as jest.Mock).mockReturnValue(true);
-    deleteFilesDir('test-slug');
-    expect(rmSync).toHaveBeenCalledWith(getFilesPath('test-slug'), {
-      recursive: true,
-      force: true,
-    });
-  });
-
-  test('does nothing when files dir does not exist', () => {
-    (existsSync as jest.Mock).mockReturnValue(false);
-    deleteFilesDir('missing');
-    expect(rmSync).not.toHaveBeenCalled();
-  });
-});

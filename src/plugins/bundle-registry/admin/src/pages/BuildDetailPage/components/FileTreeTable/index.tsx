@@ -8,16 +8,16 @@ import {
   HeaderCheckCell,
   HeaderNameCell,
   HeaderSizeCell,
-  HeaderModCell,
+  HeaderModifiedCell,
   HeaderHashCell,
-  HeaderDlCell,
-  HeaderActCell,
+  HeaderDownloadCell,
+  HeaderActionCell,
 } from './styles';
 import {
   DirRow,
   CheckCell,
   NameCell,
-  ActCell,
+  ActionCell,
   EmptyCell,
   ExpandButton,
   DirName,
@@ -129,9 +129,9 @@ const FileTreeTable = memo(
           <HeaderCheckCell />
           <HeaderNameCell>{translate('buildDetail.table.column.name')}</HeaderNameCell>
           <HeaderSizeCell>{translate('buildDetail.table.column.size')}</HeaderSizeCell>
-          <HeaderModCell>{translate('buildDetail.table.column.modified')}</HeaderModCell>
+          <HeaderModifiedCell>{translate('buildDetail.table.column.modified')}</HeaderModifiedCell>
           <HeaderHashCell>{translate('buildDetail.table.column.sha256')}</HeaderHashCell>
-          <HeaderDlCell>
+          <HeaderDownloadCell>
             <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               {translate('buildDetail.table.column.once')}
               <Tooltip label={translate('buildDetail.table.column.once.tooltip')}>
@@ -156,8 +156,8 @@ const FileTreeTable = memo(
                 </span>
               </Tooltip>
             </span>
-          </HeaderDlCell>
-          <HeaderActCell />
+          </HeaderDownloadCell>
+          <HeaderActionCell />
         </HeaderRow>
 
         <DirRow
@@ -211,7 +211,7 @@ const FileTreeTable = memo(
           <EmptyCell style={undefined} />
           <EmptyCell style={undefined} />
           <EmptyCell style={undefined} />
-          <ActCell />
+          <ActionCell />
         </DirRow>
 
         {isRootExpanded && rows.map((row) => (

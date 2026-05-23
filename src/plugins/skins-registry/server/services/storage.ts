@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, rmSync } from 'fs';
 import { join, resolve } from 'path';
 import { randomBytes } from 'crypto';
 
@@ -35,9 +35,6 @@ const deleteFileIfExists = (filePath: string): void => {
   if (existsSync(filePath)) rmSync(filePath);
 };
 
-const readFileOrNull = (filePath: string): Buffer | null =>
-  existsSync(filePath) ? readFileSync(filePath) : null;
-
 const writeSkinFile = (filename: string, buffer: Buffer): void => {
   ensureDirs();
   writeFileSync(getSkinFilePath(filename), buffer);
@@ -62,5 +59,4 @@ export {
   writeSkinFile,
   writeCapeFile,
   deleteFileIfExists,
-  readFileOrNull,
 };

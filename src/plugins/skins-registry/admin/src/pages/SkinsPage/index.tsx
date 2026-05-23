@@ -2,11 +2,11 @@ import { useState, useCallback } from 'react';
 import { Main, Box, Button, Typography, Flex } from '@strapi/design-system';
 import { ArrowClockwise, Plus, Trash } from '@strapi/icons';
 import { useNotification } from '@strapi/strapi/admin';
+import { useTheme } from 'styled-components';
 import { useTranslate } from '../../hooks/useTranslate';
 import { skinsApi } from '../../api/skinsApi';
 import { usePaginatedList } from '../../hooks/usePaginatedList';
-import SkinsTab from './SkinsTab';
-import CapesTab from './CapesTab';
+import AssetTab from './AssetTab';
 import UploadModal from './UploadModal';
 import type { PlayerSkin, PlayerCape } from '../../../../shared/types/entities';
 
@@ -24,6 +24,7 @@ const getServerUrl = (): string => {
 
 const SkinsPage = () => {
   const translate = useTranslate();
+  const theme = useTheme();
   const { toggleNotification } = useNotification();
   const [activeTab, setActiveTab] = useState<'skins' | 'capes'>('skins');
   const [showUpload, setShowUpload] = useState(false);
@@ -170,10 +171,10 @@ const SkinsPage = () => {
                 onClick={() => setActiveTab(tab)}
                 style={{
                   padding: '10px 20px',
-                  border: `1px solid ${isActive ? '#4945ff' : 'rgba(255,255,255,0.22)'}`,
+                  border: `1px solid ${isActive ? theme.colors.primary600 : theme.colors.neutral200}`,
                   borderRadius: 6,
-                  background: isActive ? 'rgba(73,69,255,0.12)' : 'transparent',
-                  color: isActive ? '#7b79ff' : 'rgba(255,255,255,0.45)',
+                  background: isActive ? theme.colors.primary100 : 'transparent',
+                  color: isActive ? theme.colors.primary700 : theme.colors.neutral500,
                   fontSize: 14,
                   fontWeight: isActive ? 600 : 400,
                   cursor: 'pointer',
@@ -190,8 +191,9 @@ const SkinsPage = () => {
 
       {/* ── Tab content ────────────────────────────────────────────── */}
       {activeTab === 'skins' && (
-        <SkinsTab
-          skins={skinsState.items}
+        <AssetTab
+          kind="skin"
+          items={skinsState.items}
           total={skinsState.total}
           page={skinsState.page}
           pageCount={skinsState.pageCount}
@@ -209,8 +211,9 @@ const SkinsPage = () => {
       )}
 
       {activeTab === 'capes' && (
-        <CapesTab
-          capes={capesState.items}
+        <AssetTab
+          kind="cape"
+          items={capesState.items}
           total={capesState.total}
           page={capesState.page}
           pageCount={capesState.pageCount}
