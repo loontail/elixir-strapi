@@ -33,6 +33,12 @@ const adminRoutes = {
     },
     {
       method: 'POST',
+      path: '/builds/:slug/folders',
+      handler: 'build.createFolder',
+      config: { policies: [] },
+    },
+    {
+      method: 'POST',
       path: '/builds/:slug/files/bulk-delete',
       handler: 'build.bulkDeleteFiles',
       config: { policies: [] },

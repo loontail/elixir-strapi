@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Button, Flex } from '@strapi/design-system';
 import { ArrowClockwise, Upload, Plus } from '@strapi/icons';
+import { FolderIcon } from '../../../../components/Icons';
 import { useTranslate } from '../../../../hooks/useTranslate';
 
 interface ToolbarProps {
@@ -9,6 +10,7 @@ interface ToolbarProps {
   validating: boolean;
   onValidate: () => void;
   onRegenerate: () => void;
+  onCreateFolder: () => void;
   onAddFile: () => void;
   onUploadZip: () => void;
 }
@@ -20,6 +22,7 @@ const Toolbar = memo(
     validating,
     onValidate,
     onRegenerate,
+    onCreateFolder,
     onAddFile,
     onUploadZip,
   }: ToolbarProps) {
@@ -44,6 +47,14 @@ const Toolbar = memo(
           onClick={onRegenerate}
         >
           {translate('buildDetail.toolbar.regenerate')}
+        </Button>
+        <Button
+          variant="secondary"
+          startIcon={<FolderIcon />}
+          disabled={uploading || regenerating}
+          onClick={onCreateFolder}
+        >
+          {translate('buildDetail.toolbar.createFolder')}
         </Button>
         <Button
           variant="secondary"

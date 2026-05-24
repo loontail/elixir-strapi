@@ -26,6 +26,7 @@ export interface BuildsApi {
   diskSpace: () => Promise<{ free: number | null; total: number | null }>;
   uploadArchive: (slug: string, file: File) => Promise<unknown>;
   uploadFile: (slug: string, file: File, targetPath: string) => Promise<unknown>;
+  createFolder: (slug: string, relativePath: string) => Promise<Build>;
 }
 
 export const useBuildsApi = (): BuildsApi => {
@@ -72,6 +73,8 @@ export const useBuildsApi = (): BuildsApi => {
         fd.append('targetPath', targetPath);
         return (await post(`${BASE}/builds/${slug}/files`, fd)).data;
       },
+      createFolder: async (slug, relativePath) =>
+        (await post<Build>(`${BASE}/builds/${slug}/folders`, { relativePath })).data,
     }),
     [get, post, put, del],
   );

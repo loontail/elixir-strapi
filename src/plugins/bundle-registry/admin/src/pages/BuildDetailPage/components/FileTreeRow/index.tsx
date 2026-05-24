@@ -5,7 +5,7 @@ import { More } from '@strapi/icons';
 import { PencilIcon, UploadIcon, HashIcon, TrashIcon, FolderIcon, FolderOpenIcon, FileIcon, ChevronRightIcon, ChevronDownIcon } from '../../../../components/Icons';
 import { formatBytes } from '../../../../utils/formatBytes';
 import { useTranslate } from '../../../../hooks/useTranslate';
-import { getFileIds } from '../../hooks/useFileTree';
+import { getFileIds, getNodeSelectionIds } from '../../hooks/useFileTree';
 import {
   DirRow,
   FileRow,
@@ -100,9 +100,10 @@ const FileTreeRow = memo(function FileTreeRow({
   });
 
   if (node.isDir) {
-    const dirIds = getFileIds(node);
-    const allSelected = dirIds.length > 0 && dirIds.every((id) => selected.has(id));
-    const someSelected = !allSelected && dirIds.some((id) => selected.has(id));
+    const fileCount = getFileIds(node).length;
+    const selectionIds = getNodeSelectionIds(node);
+    const allSelected = selectionIds.length > 0 && selectionIds.every((id) => selected.has(id));
+    const someSelected = !allSelected && selectionIds.some((id) => selected.has(id));
     const isOpen = expanded.has(node.key);
 
     const isDraggableDir = !!node.entry;
@@ -138,7 +139,7 @@ const FileTreeRow = memo(function FileTreeRow({
         }}
       >
         <CheckCell>
-          {dirIds.length > 0 && (
+          {selectionIds.length > 0 && (
             <Checkbox
               aria-label={translate('buildDetail.selectDir', { name: node.name })}
               checked={someSelected ? 'indeterminate' : allSelected}
@@ -161,7 +162,7 @@ const FileTreeRow = memo(function FileTreeRow({
             ? <FolderOpenIcon size={16} color={colors.warning600} />
             : <FolderIcon size={16} color={colors.warning600} />}
           <DirName>{node.name}</DirName>
-          <DirCount>{dirIds.length}</DirCount>
+          <DirCount>{fileCount}</DirCount>
         </NameCell>
         <EmptyCell style={undefined} /><EmptyCell style={undefined} /><EmptyCell style={undefined} /><EmptyCell style={undefined} />
         <ActionCell>

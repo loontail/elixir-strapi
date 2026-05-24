@@ -15,22 +15,31 @@ export interface FlatRow {
   lineFlags: boolean[];
 }
 
-const buildFileTree = (files: Artifact[], dirEntriesMap: Map<string, Artifact>): TreeNode[] => {
+const buildFileTree = (
+  files: Artifact[],
+  dirEntriesMap: Map<string, Artifact>,
+  extraDirs: Artifact[],
+): TreeNode[] => {
   const nodeMap = new Map<string, TreeNode>();
+
+  const ensureDirChain = (relativePath: string): void => {
+    const parts = relativePath.split('/');
+    for (let partIndex = 1; partIndex <= parts.length; partIndex++) {
+      const dirPath = parts.slice(0, partIndex).join('/');
+      if (nodeMap.has(dirPath)) continue;
+      nodeMap.set(dirPath, {
+        key: dirPath,
+        name: parts[partIndex - 1],
+        isDir: true,
+        entry: dirEntriesMap.get(dirPath) ?? null,
+        children: [],
+      });
+    }
+  };
+
   files.forEach((file) => {
     const parts = file.relativePath.split('/');
-    for (let partIndex = 1; partIndex < parts.length; partIndex++) {
-      const dirPath = parts.slice(0, partIndex).join('/');
-      if (!nodeMap.has(dirPath)) {
-        nodeMap.set(dirPath, {
-          key: dirPath,
-          name: parts[partIndex - 1],
-          isDir: true,
-          entry: dirEntriesMap.get(dirPath) ?? null,
-          children: [],
-        });
-      }
-    }
+    if (parts.length > 1) ensureDirChain(parts.slice(0, -1).join('/'));
     nodeMap.set(file.relativePath, {
       key: file.relativePath,
       name: file.name,
@@ -39,6 +48,8 @@ const buildFileTree = (files: Artifact[], dirEntriesMap: Map<string, Artifact>):
       children: [],
     });
   });
+
+  extraDirs.forEach((dir) => ensureDirChain(dir.relativePath));
 
   const roots: TreeNode[] = [];
   nodeMap.forEach((node, nodePath) => {
@@ -86,6 +97,14 @@ export const getFileIds = (node: TreeNode): number[] => {
   return node.children.flatMap(getFileIds);
 };
 
+// Selectable IDs include the folder's own entry alongside descendants —
+// used by checkbox state and bulk-delete so empty folders are also reachable.
+export const getNodeSelectionIds = (node: TreeNode): number[] => {
+  if (!node.isDir) return node.entry ? [node.entry.id] : [];
+  const own = node.entry ? [node.entry.id] : [];
+  return [...own, ...node.children.flatMap(getNodeSelectionIds)];
+};
+
 interface UseFileTreeResult {
   rows: FlatRow[];
   expanded: Set<string>;
@@ -110,13 +129,16 @@ const useFileTree = (artifacts: Artifact[]): UseFileTreeResult => {
 
   const files = useMemo(() => artifacts.filter((entry) => !entry.isDir), [artifacts]);
 
+  const dirArtifacts = useMemo(
+    () => artifacts.filter((entry) => entry.isDir),
+    [artifacts],
+  );
+
   const dirEntriesMap = useMemo(() => {
     const map = new Map<string, Artifact>();
-    artifacts
-      .filter((entry) => entry.isDir)
-      .forEach((dirEntry) => map.set(dirEntry.relativePath, dirEntry));
+    dirArtifacts.forEach((dirEntry) => map.set(dirEntry.relativePath, dirEntry));
     return map;
-  }, [artifacts]);
+  }, [dirArtifacts]);
 
   const filteredFiles = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -127,9 +149,18 @@ const useFileTree = (artifacts: Artifact[]): UseFileTreeResult => {
     );
   }, [files, search]);
 
+  const filteredDirs = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return dirArtifacts;
+    return dirArtifacts.filter(
+      (dir) =>
+        dir.relativePath.toLowerCase().includes(query) || dir.name.toLowerCase().includes(query),
+    );
+  }, [dirArtifacts, search]);
+
   const tree = useMemo(
-    () => buildFileTree(filteredFiles, dirEntriesMap),
-    [filteredFiles, dirEntriesMap],
+    () => buildFileTree(filteredFiles, dirEntriesMap, filteredDirs),
+    [filteredFiles, dirEntriesMap, filteredDirs],
   );
 
   const effectiveExpanded = useMemo(() => {
@@ -171,7 +202,8 @@ const useFileTree = (artifacts: Artifact[]): UseFileTreeResult => {
 
   const toggleDir = useCallback(
     (node: TreeNode) => {
-      const ids = getFileIds(node);
+      const ids = getNodeSelectionIds(node);
+      if (ids.length === 0) return;
       const allIn = ids.every((id) => selected.has(id));
       setSelected((prev) => {
         const next = new Set(prev);

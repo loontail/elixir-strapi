@@ -348,6 +348,60 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
     await regenerateAndReturnBuild(strapi, slug, ctx);
   },
 
+  async createFolder(ctx: KoaContext) {
+    const { slug } = ctx.params as { slug: string };
+    const build = await findBuildOrNotFound(strapi, slug, ctx);
+    if (!build) return;
+
+    const rawPath: string = (ctx.request.body as { relativePath?: string })?.relativePath ?? '';
+    if (!rawPath.trim()) return ctx.badRequest('relativePath is required');
+
+    const filesPath = getFilesPath(slug);
+    const normalised = normaliseRelativePath(rawPath.trim(), filesPath, ctx, 'relativePath');
+    if (!normalised) return;
+
+    ensureBuildDir(slug);
+    const fullPath = path.join(filesPath, normalised);
+
+    if (existsSync(fullPath) && !statSync(fullPath).isDirectory()) {
+      return ctx.badRequest('A file already exists at that path');
+    }
+    mkdirSync(fullPath, { recursive: true });
+
+    const segments = normalised.split('/');
+    const ancestorPaths: string[] = [];
+    for (let i = 1; i <= segments.length; i++) {
+      ancestorPaths.push(segments.slice(0, i).join('/'));
+    }
+
+    const existing = (await strapi.db.query(ARTIFACT_UID).findMany({
+      where: { build: build.id, relativePath: { $in: ancestorPaths } },
+    })) as Artifact[];
+    const existingMap = new Map(existing.map((e) => [e.relativePath, e]));
+
+    for (const ancestorPath of ancestorPaths) {
+      const ex = existingMap.get(ancestorPath);
+      if (ex && !ex.isDir) {
+        return ctx.badRequest(`A file already exists at "${ancestorPath}"`);
+      }
+      if (ex) continue;
+      const { name, category } = splitRelativePath(ancestorPath);
+      await strapi.db.query(ARTIFACT_UID).create({
+        data: {
+          build: build.id,
+          relativePath: ancestorPath,
+          name,
+          category,
+          size: 0,
+          isDir: true,
+          downloadOnce: false,
+        },
+      });
+    }
+
+    await regenerateAndReturnBuild(strapi, slug, ctx);
+  },
+
   async updateFile(ctx: KoaContext) {
     const { slug, entryId } = ctx.params as { slug: string; entryId: string };
     const build = await findBuildOrNotFound(strapi, slug, ctx);
@@ -467,25 +521,44 @@ const buildController = ({ strapi }: { strapi: Strapi }) => ({
         populate: ['build'],
       })) as EntryWithBuild[];
 
-    const valid = entries.filter((e) => e.build?.slug === slug && !e.isDir);
-    const filesPath = getFilesPath(slug);
-
-    for (const entry of valid) {
-      const filePath = path.join(filesPath, entry.relativePath);
-      if (existsSync(filePath)) {
-        unlinkSync(filePath);
-        removeEmptyDirsUpward(path.dirname(filePath), filesPath);
-      }
+    const valid = entries.filter((e) => e.build?.slug === slug);
+    if (valid.length === 0) {
+      ctx.body = { deleted: 0 };
+      return;
     }
 
-    if (valid.length > 0) {
+    const filesPath = getFilesPath(slug);
+    const allEntries: Array<{ id: number; relativePath: string }> = await strapi.db
+      .query(ARTIFACT_UID)
+      .findMany({ where: { build: build.id }, select: ['id', 'relativePath'] });
+    const removedDbIds = new Set<number>();
+
+    for (const entry of valid) {
+      const entryPath = path.join(filesPath, entry.relativePath);
+      if (entry.isDir) {
+        if (existsSync(entryPath)) {
+          rmSync(entryPath, { recursive: true, force: true });
+          removeEmptyDirsUpward(path.dirname(entryPath), filesPath);
+        }
+        const prefix = entry.relativePath + '/';
+        for (const child of allEntries) {
+          if (child.relativePath.startsWith(prefix)) removedDbIds.add(child.id);
+        }
+      } else if (existsSync(entryPath)) {
+        unlinkSync(entryPath);
+        removeEmptyDirsUpward(path.dirname(entryPath), filesPath);
+      }
+      removedDbIds.add(entry.id);
+    }
+
+    if (removedDbIds.size > 0) {
       await strapi.db
         .query(ARTIFACT_UID)
-        .deleteMany({ where: { id: { $in: valid.map((e) => e.id) } } });
+        .deleteMany({ where: { id: { $in: [...removedDbIds] } } });
     }
 
     await generateManifest(slug, strapi);
-    ctx.body = { deleted: valid.length };
+    ctx.body = { deleted: removedDbIds.size };
   },
 
   async validate(ctx: KoaContext) {

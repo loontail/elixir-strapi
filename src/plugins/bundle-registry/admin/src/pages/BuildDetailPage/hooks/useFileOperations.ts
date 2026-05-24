@@ -18,6 +18,7 @@ interface UseFileOperationsOptions {
 
 export type ModalState =
   | { type: 'add' }
+  | { type: 'createFolder' }
   | { type: 'replace'; entry: Artifact }
   | { type: 'rename'; entry: Artifact }
   | { type: 'delete'; entry: Artifact }
@@ -58,7 +59,7 @@ const useFileOperations = ({
   // flows have custom success branches and stay outside.
   const runAction = useCallback(
     async (
-      action: () => Promise<void>,
+      action: () => Promise<unknown>,
       opts: { setBusy?: (b: boolean) => void; successMessage?: string },
     ): Promise<void> => {
       opts.setBusy?.(true);

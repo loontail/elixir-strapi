@@ -23,6 +23,7 @@ import { Toolbar } from './components/Toolbar';
 import { StatsBar } from './components/StatsBar';
 import { FileTreeTable } from './components/FileTreeTable';
 import { AddFileModal } from './components/AddFileModal';
+import { CreateFolderModal } from './components/CreateFolderModal';
 import { RenameModal } from './components/RenameModal';
 import { DeleteFileDialog } from './components/DeleteFileDialog';
 import { BulkDeleteDialog } from './components/BulkDeleteDialog';
@@ -204,6 +205,7 @@ const BuildDetailPage = () => {
             validating={validating}
             onValidate={handleValidate}
             onRegenerate={handleRegenerate}
+            onCreateFolder={() => setModal({ type: 'createFolder' })}
             onAddFile={() => setModal({ type: 'add' })}
             onUploadZip={() => archiveInputRef.current?.click()}
           />
@@ -372,6 +374,9 @@ const BuildDetailPage = () => {
 
       {modal?.type === 'add' && (
         <AddFileModal slug={slug} onClose={closeModal} onSuccess={onSuccess} />
+      )}
+      {modal?.type === 'createFolder' && (
+        <CreateFolderModal slug={slug} onClose={closeModal} onSuccess={onSuccess} />
       )}
       {modal?.type === 'replace' && 'entry' in modal && (
         <AddFileModal

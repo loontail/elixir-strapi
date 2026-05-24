@@ -46,6 +46,7 @@
 
   "buildDetail.toolbar.validate": "Validate",
   "buildDetail.toolbar.regenerate": "Regenerate",
+  "buildDetail.toolbar.createFolder": "New folder",
   "buildDetail.toolbar.addFile": "Add file",
   "buildDetail.toolbar.uploadZip": "Upload ZIP",
 
@@ -128,6 +129,15 @@
   "modal.addFile.validation.noFile": "Select a file first",
   "modal.addFile.validation.noPath": "Target path is required",
   "modal.addFile.toast.success": "File uploaded.",
+
+  "modal.createFolder.title": "New Folder",
+  "modal.createFolder.field.label": "Folder path",
+  "modal.createFolder.field.placeholder": "config/server",
+  "modal.createFolder.field.hint": "Relative path inside the registry. Use slashes to create nested folders.",
+  "modal.createFolder.cancel": "Cancel",
+  "modal.createFolder.create": "Create",
+  "modal.createFolder.validation.required": "Folder path is required",
+  "modal.createFolder.toast.success": "Folder created.",
 
   "modal.rename.title.file": "Rename File",
   "modal.rename.title.folder": "Rename Folder",
