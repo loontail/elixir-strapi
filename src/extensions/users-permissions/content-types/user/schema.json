@@ -64,12 +64,6 @@
       "target": "plugin::users-permissions.role",
       "inversedBy": "users",
       "configurable": false
-    },
-    "skin": {
-      "type": "string"
-    },
-    "cape": {
-      "type": "string"
     }
   }
 }

@@ -1,11 +1,14 @@
-// Seeds an api-token row whose `access_key` matches what the custom
-// `plugin::skins-registry.api-token-auth` policy expects.
+// Seeds an api-token row whose `access_key` matches what the global
+// `global::api-token-auth` policy expects (see src/policies/api-token-auth.js).
 //
 // The policy hashes the raw bearer token with SHA-512 and looks the result
 // up in `strapi_api_tokens.access_key`. Tokens generated through the Strapi
 // admin UI use HMAC instead, so a UI-generated row never satisfies the
 // policy. This script inserts a row with the right access_key shape, using
 // the token that lives in `minecraft-launcher/.env` (or elixir-app/.env).
+// Used by the bundle-registry plugin for its API-token-protected endpoints
+// (catalogue, manifests). Skin/cape mutations now go through the Yggdrasil
+// plugin which uses Yggdrasil access tokens instead — they don't need this.
 //
 // Run with: node scripts/seed-launcher-token.mjs
 
@@ -90,7 +93,7 @@ if (existing.rowCount > 0) {
        RETURNING id`,
       [
         TOKEN_NAME,
-        'Seeded by scripts/seed-launcher-token.mjs — required by plugin::skins-registry.api-token-auth (raw SHA-512 over the bearer token).',
+        'Seeded by scripts/seed-launcher-token.mjs — required by global::api-token-auth (raw SHA-512 over the bearer token).',
         accessKey,
         `launcher-sha512-${Date.now()}`,
       ],
