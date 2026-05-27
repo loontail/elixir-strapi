@@ -12,9 +12,13 @@ const getFilesPath = (slug: string): string => join(getBuildPath(slug), 'files')
 const getManifestPath = (slug: string): string => join(getBuildPath(slug), 'artifacts.json');
 
 const getPublicUrl = (slug: string, relativePath: string, strapi: StrapiLike): string => {
+  // Either the plugin's own `publicUrl` override (used when a CDN fronts the
+  // files separately from Strapi) or `server.url` from `config/server.js`,
+  // which the host project sets from the `URL` env. Both are guaranteed
+  // non-empty by config — no hard-coded host literal needed here.
   const baseUrl: string =
     strapi.plugin('bundle-registry').config('publicUrl') ||
-    strapi.config.get('server.url', 'http://localhost:2053');
+    strapi.config.get('server.url');
   const normalizedPath = relativePath.replace(/\\/g, '/');
   return `${baseUrl}/bundle-registry/builds/${slug}/files/${normalizedPath}`;
 };
