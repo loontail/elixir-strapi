@@ -14,7 +14,7 @@ const getManifestPath = (slug: string): string => join(getBuildPath(slug), 'arti
 const getPublicUrl = (slug: string, relativePath: string, strapi: StrapiLike): string => {
   const baseUrl: string =
     strapi.plugin('bundle-registry').config('publicUrl') ||
-    strapi.config.get('server.url', 'http://localhost:1337');
+    strapi.config.get('server.url', 'http://localhost:2053');
   const normalizedPath = relativePath.replace(/\\/g, '/');
   return `${baseUrl}/bundle-registry/builds/${slug}/files/${normalizedPath}`;
 };

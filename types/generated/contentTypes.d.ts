@@ -943,94 +943,6 @@ export interface PluginReviewWorkflowsWorkflowStage
   };
 }
 
-export interface PluginSkinsRegistryPlayerCape
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'skins_registry_player_capes';
-  info: {
-    description: 'Minecraft player cape';
-    displayName: 'Player Cape';
-    pluralName: 'player-capes';
-    singularName: 'player-cape';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  pluginOptions: {
-    'content-manager': {
-      visible: false;
-    };
-    'content-type-builder': {
-      visible: false;
-    };
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    filePath: Schema.Attribute.String & Schema.Attribute.Required;
-    fileSize: Schema.Attribute.Integer;
-    fileUrl: Schema.Attribute.String & Schema.Attribute.Required;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'plugin::skins-registry.player-cape'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    userId: Schema.Attribute.Integer &
-      Schema.Attribute.Required &
-      Schema.Attribute.Unique;
-    username: Schema.Attribute.String;
-  };
-}
-
-export interface PluginSkinsRegistryPlayerSkin
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'skins_registry_player_skins';
-  info: {
-    description: 'Minecraft player skin';
-    displayName: 'Player Skin';
-    pluralName: 'player-skins';
-    singularName: 'player-skin';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  pluginOptions: {
-    'content-manager': {
-      visible: false;
-    };
-    'content-type-builder': {
-      visible: false;
-    };
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    filePath: Schema.Attribute.String & Schema.Attribute.Required;
-    fileSize: Schema.Attribute.Integer;
-    fileUrl: Schema.Attribute.String & Schema.Attribute.Required;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'plugin::skins-registry.player-skin'
-    > &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    userId: Schema.Attribute.Integer &
-      Schema.Attribute.Required &
-      Schema.Attribute.Unique;
-    username: Schema.Attribute.String;
-  };
-}
-
 export interface PluginUploadFile extends Struct.CollectionTypeSchema {
   collectionName: 'files';
   info: {
@@ -1253,7 +1165,6 @@ export interface PluginUsersPermissionsUser
   };
   attributes: {
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    cape: Schema.Attribute.String;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     createdAt: Schema.Attribute.DateTime;
@@ -1282,7 +1193,6 @@ export interface PluginUsersPermissionsUser
       'manyToOne',
       'plugin::users-permissions.role'
     >;
-    skin: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1292,6 +1202,94 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 3;
       }>;
+  };
+}
+
+export interface PluginYggdrasilPlayerCape extends Struct.CollectionTypeSchema {
+  collectionName: 'yggdrasil_player_capes';
+  info: {
+    description: 'Minecraft player cape owned by the Yggdrasil plugin';
+    displayName: 'Player Cape';
+    pluralName: 'player-capes';
+    singularName: 'player-cape';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    filePath: Schema.Attribute.String & Schema.Attribute.Required;
+    fileSize: Schema.Attribute.Integer;
+    fileUrl: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::yggdrasil.player-cape'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userId: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    username: Schema.Attribute.String;
+  };
+}
+
+export interface PluginYggdrasilPlayerSkin extends Struct.CollectionTypeSchema {
+  collectionName: 'yggdrasil_player_skins';
+  info: {
+    description: 'Minecraft player skin owned by the Yggdrasil plugin';
+    displayName: 'Player Skin';
+    pluralName: 'player-skins';
+    singularName: 'player-skin';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    filePath: Schema.Attribute.String & Schema.Attribute.Required;
+    fileSize: Schema.Attribute.Integer;
+    fileUrl: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::yggdrasil.player-skin'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userId: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    username: Schema.Attribute.String;
+    variant: Schema.Attribute.Enumeration<['CLASSIC', 'SLIM']> &
+      Schema.Attribute.DefaultTo<'CLASSIC'>;
   };
 }
 
@@ -1366,13 +1364,13 @@ declare module '@strapi/strapi' {
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::review-workflows.workflow': PluginReviewWorkflowsWorkflow;
       'plugin::review-workflows.workflow-stage': PluginReviewWorkflowsWorkflowStage;
-      'plugin::skins-registry.player-cape': PluginSkinsRegistryPlayerCape;
-      'plugin::skins-registry.player-skin': PluginSkinsRegistryPlayerSkin;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'plugin::yggdrasil.player-cape': PluginYggdrasilPlayerCape;
+      'plugin::yggdrasil.player-skin': PluginYggdrasilPlayerSkin;
       'plugin::yggdrasil.token': PluginYggdrasilToken;
     }
   }

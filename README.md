@@ -1,52 +1,21 @@
 # 🚀 Getting started with Strapi
 
-## Local HTTPS for Yggdrasil testing
-
-The `authlib-injector` agent prefers HTTPS Yggdrasil servers and prints a
-warning when pointed at HTTP. For local testing run the dev server behind a
-TLS reverse proxy using a locally trusted certificate from
-[`mkcert`](https://github.com/FiloSottile/mkcert).
-
-**One-time setup**:
+## Running
 
 ```
-choco install mkcert            # or: scoop install mkcert / brew install mkcert
-mkcert -install                 # installs a local CA into the OS trust store
-cd launcher-strapi
-mkdir data/dev-ssl 2>$null
-mkcert -cert-file data/dev-ssl/localhost.pem `
-       -key-file  data/dev-ssl/localhost-key.pem `
-       localhost 127.0.0.1 ::1
+npm run dev    # `strapi develop` on http://localhost:2053
 ```
 
-After that any client that honours the OS trust store accepts the cert
-without per-app TLS plumbing:
+Port `2053` is one of Cloudflare's HTTPS-proxied ports: in production
+this Strapi sits behind a Cloudflare tunnel (or origin rule) that
+terminates TLS at the edge and forwards plain HTTP to `:2053` locally.
+No in-repo SSL / mkcert / `local-ssl-proxy` plumbing — the dev server
+binds to plain HTTP and any HTTPS-fronting belongs at the edge.
 
-- Chromium (the launcher's renderer) — automatic via Windows root store.
-- The minecraft-launcher's Node main process — `npm run dev` is wrapped to
-  set `NODE_EXTRA_CA_CERTS` from `mkcert -CAROOT`.
-- The Minecraft JVM — the launcher injects
-  `-Djavax.net.ssl.trustStoreType=Windows-ROOT` so the bundled JRE reads
-  the Windows trust store on Windows.
-
-**Running**:
-
-```
-npm run dev:https      # `strapi develop` on 1337 + local-ssl-proxy on 1338
-```
-
-The npm script is a literal one-liner built from `concurrently` and
-`local-ssl-proxy` (both `devDependencies`) — no in-repo helper script
-to maintain. To change the proxy port or cert paths, edit the script
-in `package.json`.
-
-Then in `minecraft-launcher/.env`:
-
-```
-API_URL=https://localhost:1338
-```
-
-The mkcert cert/key live under `data/dev-ssl/` (gitignored).
+The launcher (`minecraft-launcher`) points at this Strapi via its own
+`API_URL` env. For purely local dev that's `http://localhost:2053`;
+when exercising the Cloudflare path, set it to the public Cloudflare
+hostname instead.
 
 ## Recent changes
 
