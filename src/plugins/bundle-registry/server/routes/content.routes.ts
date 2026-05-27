@@ -1,16 +1,17 @@
-// Bundle manifests are catalogue data — not scoped to a logged-in user —
-// but they should still require the static API token. Without it, anyone
-// hitting the public URL could enumerate builds.
-const API_TOKEN_ONLY = { auth: false, policies: ['global::api-token-auth'] };
-
 const contentRoutes = {
   type: 'content-api',
   routes: [
+    // Public read-only catalogue data: filenames, sha256 hashes, download
+    // URLs. The launcher uses it to compare against the local copy and
+    // decide whether to sync. No PII, no auth secrets, no per-user view —
+    // anyone able to reach the Strapi instance can fetch it. Admin
+    // mutations (create / update / delete builds) live in admin.routes.ts
+    // and are gated by the admin namespace's JWT.
     {
       method: 'GET',
       path: '/builds/:slug/manifest',
       handler: 'manifest.getManifest',
-      config: API_TOKEN_ONLY,
+      config: { auth: false },
     },
   ],
 };
