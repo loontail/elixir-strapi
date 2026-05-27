@@ -5,10 +5,14 @@
   "description": "A Strapi application",
   "scripts": {
     "dev": "strapi develop",
-    "dev:https": "node scripts/dev-https.mjs",
+    "dev:https": "concurrently -k -n strapi,https -c blue,green \"strapi develop\" \"local-ssl-proxy --source 1338 --target 1337 --cert data/dev-ssl/localhost.pem --key data/dev-ssl/localhost-key.pem\"",
     "start": "strapi start",
     "build": "strapi build",
     "strapi": "strapi"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "local-ssl-proxy": "^2.0.5"
   },
   "dependencies": {
     "@loontail/minecraft-kit": "^0.8.9",
