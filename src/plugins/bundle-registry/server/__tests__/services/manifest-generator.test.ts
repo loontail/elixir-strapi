@@ -43,7 +43,7 @@ const makeStrapi = (entries: Entry[], buildId = 1) => {
     strapi: {
       db: { query: queryMock },
       plugin: () => ({ config: () => null }),
-      config: { get: () => 'http://localhost:2053' },
+      config: { get: () => 'http://localhost:2052' },
     },
     buildUpdate,
     entryFindMany,
@@ -258,7 +258,7 @@ describe('generate', () => {
     const strapi = {
       db: { query: queryMock },
       plugin: () => ({ config: () => null }),
-      config: { get: () => 'http://localhost:2053' },
+      config: { get: () => 'http://localhost:2052' },
     };
 
     await generate('ghost-build', strapi as never);

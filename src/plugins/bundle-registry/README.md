@@ -105,7 +105,7 @@ All admin routes require Strapi admin authentication. The manifest endpoint is p
       "size": 2097152,
       "isDir": false,
       "sha256": "a1b2c3…",
-      "url": "http://localhost:2053/bundle-registry/builds/my-pack/files/mods/create-1.0.0.jar"
+      "url": "http://localhost:2052/bundle-registry/builds/my-pack/files/mods/create-1.0.0.jar"
     }
   ],
   "config": [...]

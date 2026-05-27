@@ -1,8 +1,9 @@
 module.exports = ({ env }) => {
-  // 2053 is one of Cloudflare's HTTPS-proxied ports — the public edge can
-  // terminate TLS for a tunnel pointing at this local Strapi without any
-  // local SSL plumbing. Override via the PORT env when running elsewhere.
-  const port = env.int('PORT', 2053);
+  // 2052 is one of Cloudflare's proxied ports — the public edge fronts this
+  // local Strapi and (optionally) terminates TLS upstream, so the origin
+  // can stay on plain HTTP with no local SSL plumbing. Override via the
+  // PORT env when running elsewhere.
+  const port = env.int('PORT', 2052);
 
   return {
     host: env('HOST', '0.0.0.0'),

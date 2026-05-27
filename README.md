@@ -3,17 +3,17 @@
 ## Running
 
 ```
-npm run dev    # `strapi develop` on http://localhost:2053
+npm run dev    # `strapi develop` on http://localhost:2052
 ```
 
-Port `2053` is one of Cloudflare's HTTPS-proxied ports: in production
+Port `2052` is one of Cloudflare's HTTPS-proxied ports: in production
 this Strapi sits behind a Cloudflare tunnel (or origin rule) that
-terminates TLS at the edge and forwards plain HTTP to `:2053` locally.
+terminates TLS at the edge and forwards plain HTTP to `:2052` locally.
 No in-repo SSL / mkcert / `local-ssl-proxy` plumbing — the dev server
 binds to plain HTTP and any HTTPS-fronting belongs at the edge.
 
 The launcher (`minecraft-launcher`) points at this Strapi via its own
-`API_URL` env. For purely local dev that's `http://localhost:2053`;
+`API_URL` env. For purely local dev that's `http://localhost:2052`;
 when exercising the Cloudflare path, set it to the public Cloudflare
 hostname instead.
 

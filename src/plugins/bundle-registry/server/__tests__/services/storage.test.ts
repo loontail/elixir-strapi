@@ -20,9 +20,9 @@ jest.mock('fs', () => ({
   rmSync: jest.fn(),
 }));
 
-const makeStrapi = (publicUrl: string | null, serverUrl = 'http://localhost:2053') => ({
+const makeStrapi = (publicUrl: string | null, serverUrl = 'http://localhost:2052') => ({
   plugin: (_name: string) => ({ config: (_key: string) => publicUrl }),
-  config: { get: (_key: string, fallback?: string) => serverUrl ?? fallback ?? 'http://localhost:2053' },
+  config: { get: (_key: string, fallback?: string) => serverUrl ?? fallback ?? 'http://localhost:2052' },
 });
 
 beforeEach(() => jest.clearAllMocks());
@@ -57,9 +57,9 @@ describe('getPublicUrl', () => {
   });
 
   test('falls back to server.url when publicUrl is empty', () => {
-    const strapi = makeStrapi('', 'http://localhost:2053');
+    const strapi = makeStrapi('', 'http://localhost:2052');
     expect(getPublicUrl('build1', 'file.jar', strapi as never)).toBe(
-      'http://localhost:2053/bundle-registry/builds/build1/files/file.jar',
+      'http://localhost:2052/bundle-registry/builds/build1/files/file.jar',
     );
   });
 
