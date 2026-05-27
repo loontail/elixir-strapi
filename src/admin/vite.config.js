@@ -1,34 +1,30 @@
 // Strapi 5's admin panel boots through Vite in `strapi develop` mode and
 // looks for a user override at `src/admin/vite.config.{js,mjs,ts,mts}`.
 // The exported function receives the default config Strapi composed and
-// returns the final config (Strapi just calls `userConfig(defaultConfig)`).
+// returns the final config.
 //
 // Vite blocks requests whose `Host` header isn't on its `allowedHosts`
 // list as a DNS-rebinding mitigation. When this Strapi sits behind
-// Cloudflare (or any reverse proxy), the public hostname must be added,
+// Cloudflare (or any reverse proxy), the public hostname must be allowed,
 // otherwise visits through that hostname die with:
 //
 //   Blocked request. This host (...) is not allowed.
-//   To allow this host, add "..." to `server.allowedHosts` in vite.config.js.
 //
-// Derive the allowlist from the same `URL` env that `config/server.js`
-// uses for `server.url` — one env var drives both the public origin and
-// the admin allowlist. Localhost stays in for direct local-dev access.
+// `allowedHosts: true` permits everything — fine here because the dev
+// server binds to a local interface only; the only inbound path is the
+// Cloudflare tunnel, which already authenticates the tunnel client.
+// Tighten this to an explicit `string[]` if you need DNS-rebinding
+// protection on a directly-reachable port.
+//
+// Pattern + recommendation:
+//   https://forum.strapi.io/t/server-allowedhosts-in-vite-config-js/52759
+//   https://docs.strapi.io/dev-docs/admin-panel-customization/bundlers
 
-const publicUrl = process.env.URL ?? '';
-let publicHost = null;
-try {
-  publicHost = publicUrl ? new URL(publicUrl).hostname : null;
-} catch {
-  publicHost = null;
-}
+const { mergeConfig } = require('vite');
 
-const allowedHosts = ['localhost', '127.0.0.1', ...(publicHost ? [publicHost] : [])];
-
-module.exports = (config) => ({
-  ...config,
-  server: {
-    ...(config.server ?? {}),
-    allowedHosts,
-  },
-});
+module.exports = (config) =>
+  mergeConfig(config, {
+    server: {
+      allowedHosts: true,
+    },
+  });
