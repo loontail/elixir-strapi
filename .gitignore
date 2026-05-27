@@ -114,3 +114,14 @@ build
 .strapi-updater.json
 
 public
+
+############################
+# Local HTTPS dev (self-signed cert + PKCS12 truststore)
+############################
+data/dev-ssl/
+
+############################
+# Yggdrasil plugin runtime secrets
+# (RSA signing key the plugin rotates; never leaks into git)
+############################
+data/yggdrasil/
