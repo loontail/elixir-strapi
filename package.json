@@ -5,12 +5,14 @@
   "description": "A Strapi application",
   "scripts": {
     "dev": "strapi develop",
+    "dev:https": "node scripts/dev-https.mjs",
     "start": "strapi start",
     "build": "strapi build",
     "strapi": "strapi"
   },
   "dependencies": {
     "@loontail/minecraft-kit": "^0.8.9",
+    "@loontail/strapi-plugin-yggdrasil": "^0.0.3",
     "@strapi/plugin-cloud": "5.44.0",
     "@strapi/plugin-users-permissions": "5.44.0",
     "@strapi/strapi": "5.44.0",
