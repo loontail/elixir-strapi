@@ -14,6 +14,7 @@
     "@loontail/strapi-plugin-yggdrasil": "^0.0.4",
     "@strapi/plugin-cloud": "5.46.1",
     "@strapi/plugin-users-permissions": "5.46.1",
+    "@strapi/provider-email-nodemailer": "^5.46.1",
     "@strapi/strapi": "5.46.1",
     "adm-zip": "^0.5.17",
     "better-sqlite3": "^12.9.0",

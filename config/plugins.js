@@ -1,4 +1,17 @@
 module.exports = ({ env }) => ({
+  // Strapi's default email provider is `sendmail`, which logs a dev-mode
+  // warning urging a switch. This Strapi doesn't actually send mail to
+  // anyone — Yggdrasil sign-in bypasses users-permissions' email flows
+  // entirely — so wire nodemailer with `jsonTransport: true`. Emails get
+  // serialized to a JSON object and discarded, no SMTP relay needed.
+  email: {
+    config: {
+      provider: 'nodemailer',
+      providerOptions: {
+        jsonTransport: true,
+      },
+    },
+  },
   'minecraft-versions': {
     enabled: true,
     resolve: './src/plugins/minecraft-versions',
