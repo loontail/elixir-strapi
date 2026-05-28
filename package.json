@@ -12,9 +12,9 @@
   "dependencies": {
     "@loontail/minecraft-kit": "^0.8.9",
     "@loontail/strapi-plugin-yggdrasil": "^0.0.4",
-    "@strapi/plugin-cloud": "5.44.0",
-    "@strapi/plugin-users-permissions": "5.44.0",
-    "@strapi/strapi": "5.44.0",
+    "@strapi/plugin-cloud": "5.46.1",
+    "@strapi/plugin-users-permissions": "5.46.1",
+    "@strapi/strapi": "5.46.1",
     "adm-zip": "^0.5.17",
     "better-sqlite3": "^12.9.0",
     "pg": "^8.11.3",
@@ -23,9 +23,9 @@
     "react-router-dom": "^6.30.3",
     "styled-components": "^6.0.0"
   },
-  "//overrides": "Force a single copy of @strapi/admin across the whole tree. @strapi/strapi 5.44.0 + @strapi/core 5.44.0 pin admin@5.44.0 exactly, but the other @strapi/* sub-packages (content-manager, i18n, email, upload, plugin-cloud, …) use ranges that npm resolves to whatever minor is latest — so we ended up with admin@5.44.0 AND admin@5.46.1 side by side. Two copies means two React contexts created by `createContext('Auth')`; AuthProvider mounts on one, useAuth reads from the other, the selector returns undefined, and admin chunks blow up with `checkUserHasPermissions is not a function`. The override pins everyone to 5.44.0 — the version Strapi's own exact-pin family demands.",
+  "//overrides": "Force a single copy of @strapi/admin across the whole tree. The exact-pin family in @strapi/strapi + @strapi/core can lag a minor behind the ranged deps in the other @strapi/* sub-packages (content-manager, i18n, email, upload, plugin-cloud, …), and the two versions end up side by side. Two copies means two React contexts created by `createContext('Auth')`; AuthProvider mounts on one, useAuth reads from the other, the selector returns undefined, and admin chunks blow up with `checkUserHasPermissions is not a function`. Bump this in lock-step with the top-level @strapi/strapi pin.",
   "overrides": {
-    "@strapi/admin": "5.44.0"
+    "@strapi/admin": "5.46.1"
   },
   "author": {
     "name": "A Strapi developer"
