@@ -32,9 +32,14 @@ module.exports = ({ env }) => ({
   // Yggdrasil-compatible Minecraft auth + session server. Mounted under /api/yggdrasil.
   // The plugin adds a single `uuid` column to up_users at bootstrap; nothing else
   // in this Strapi project changes when the plugin is enabled.
+  //
+  // npm-installed plugin — no `resolve` key. Strapi 5 auto-discovers it by
+  // matching this block's name (`yggdrasil`) against the package's
+  // `strapi.name` field. (`resolve:` would point Strapi at a require-able
+  // entry, but the new sdk-plugin layout doesn't have a root `main` shim,
+  // so let Strapi find it via `package.json#strapi.name` instead.)
   yggdrasil: {
     enabled: true,
-    resolve: '@loontail/strapi-plugin-yggdrasil',
     config: {
       publicUrl: env('YGGDRASIL_PUBLIC_URL', ''),
       skinDomains: env.array('YGGDRASIL_SKIN_DOMAINS', []),
