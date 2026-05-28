@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@loontail/minecraft-kit": "^0.8.10",
-    "@loontail/strapi-plugin-yggdrasil": "^0.0.8",
+    "@loontail/strapi-plugin-yggdrasil": "^0.0.9",
     "@strapi/plugin-cloud": "5.46.1",
     "@strapi/plugin-users-permissions": "5.46.1",
     "@strapi/provider-email-nodemailer": "^5.46.1",
